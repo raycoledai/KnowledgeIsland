@@ -30,7 +30,7 @@
 
 void testInitialState(Game g);
 void testActions(Game g);
-void testLegalAction(Game g);
+void testLegalAction(Game g, int player);
 
 int main(int argc, char * argv[]){
    //Creates a new game, based on bad map
@@ -40,7 +40,9 @@ int main(int argc, char * argv[]){
    //Tests the game
    testInitialState(badMapGame);
    //Tests each actiom to see if they are legal
-   testLegalAction(badMapGame);
+   testLegalAction(badMapGame, UNI_A);
+   testLegalAction(badMapGame, UNI_B);
+   testLegalAction(badMapGame, UNI_C);
    //Tests each action
    testActions(badMapGame);
    //Free's memory from game
@@ -53,7 +55,9 @@ int main(int argc, char * argv[]){
    //Tests the game
    testInitialState(goodMapGame);
    //Tests each action to see if they are legal
-   testLegalAction(goodMapGame);
+   testLegalAction(goodMapGame, UNI_A);
+   testLegalAction(goodMapGame, UNI_B);
+   testLegalAction(goodMapGame, UNI_C);
    //Tests each action
    testActions(goodMapGame);
    //Free's memory from game
@@ -88,16 +92,35 @@ void testLegalAction(Game g, int player){
           getStudents(g, player, STUDENT_BQN) >= 1) &&
           getStudents(g, player, STUDENT_MJ) >= 1 && 
           getStudents(g, player, STUDENT_MTV) >= 1);
+  assert(isLegalAction(g, BUILD_CAMPUS) == FALSE &&
+          getStudents(g, player, STUDENT_BPS) < 1 | 
+          getStudents(g, player, STUDENT_BQN) < 1) |
+          getStudents(g, player, STUDENT_MJ) < 1 | 
+          getStudents(g, player, STUDENT_MTV) < 1);
+          
   assert (isLegalAction(g, BUILD_GO8) == TRUE && 
           getStudents(g, player, STUDENT_MJ) >= 2 && 
           getStudents(g, player, STUDENT_MMONEY) >= 3);
+  assert (isLegalAction(g, BUILD_GO8) == FALSE && 
+          getStudents(g, player, STUDENT_MJ) < 2 | 
+          getStudents(g, player, STUDENT_MMONEY) < 3);
+  
   assert(isLegalAction(g, OBTAIN_ARC) == TRUE &&
           getStudents(g, player, STUDENT_BQN) >= 1 && 
           getStudents(g, player, STUDENT_BPS) >= 1);
+  assert(isLegalAction(g, OBTAIN_ARC) == FALSE &&
+          getStudents(g, player, STUDENT_BQN) < 1 | 
+          getStudents(g, player, STUDENT_BPS) < 1);
+  
   assert(isLegalAction(g, START_SPINOFF) == TRUE &&
           getStudents(g, player, STUDENT_MJ) >= 1 && 
           getStudents(g, player, STUDENT_MTV) >= 1 && 
           getStudents(g, player, STUDENT_MMONEY) >= 1);
+  assert(isLegalAction(g, START_SPINOFF) == FALSE &&
+          getStudents(g, player, STUDENT_MJ) < 1 | 
+          getStudents(g, player, STUDENT_MTV) < 1 | 
+          getStudents(g, player, STUDENT_MMONEY) < 1);
+
   assert(isLegalAction(g, OBTAIN_PUBLICATION) == FALSE);
   assert(isLegalAction(g, OBTAIN_IP_PATENT) == FALSE);
 
@@ -110,6 +133,9 @@ void testLegalAction(Game g, int player){
         assert(isLegalAction(g, RETRAIN_STUDENTS) == TRUE &&
               getStudents(g, player, testStudentFrom) - \
               getExchangeRate (g, player, testStudentFrom, testStudentTo) >= 0);
+        assert(isLegalAction(g, RETRAIN_STUDENTS) == FALSE &&
+              getStudents(g, player, testStudentFrom) - \
+              getExchangeRate (g, player, testStudentFrom, testStudentTo) < 0);
       }  
       testStudentTo ++;
     }
