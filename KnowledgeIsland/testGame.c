@@ -1,5 +1,5 @@
-+//Name: Jeremy Hamann, Raycole Dai, Acacia Mok
-+//      Samantha Pulikottil, Adam Chen
+//Name: Jeremy Hamann, Raycole Dai, Acacia Mok
+//      Samantha Pulikottil, Adam Chen
 //Date: 03/05/16
 //Desc: Tests to see if the game works and no cheating
 
