@@ -1,4 +1,5 @@
-//Name: Jeremy Hamann (z5112913)
+//Name: Jeremy Hamann, Raycole Dai, Acacia Mok
+//      Samantha Pulikottil, Adam Chen
 //Date: 03/05/16
 //Desc: Tests to see if the game works and no cheating
 
@@ -38,6 +39,10 @@ int main(int argc, char * argv[]){
    Game badMapGame = newGame (disciplines, dice);
    //Tests the game
    testInitialState(badMapGame);
+   //Tests each actiom to see if they are legal
+   testLegalAction(badMapGame);
+   //Tests each action
+   testActions(badMapGame);
    //Free's memory from game
    disposeGame(badMapGame);
    
@@ -47,7 +52,7 @@ int main(int argc, char * argv[]){
    Game goodMapGame = newGame (disciplines, dice);
    //Tests the game
    testInitialState(goodMapGame);
-   //Tests each actino to see if they are legal
+   //Tests each action to see if they are legal
    testLegalAction(goodMapGame);
    //Tests each action
    testActions(goodMapGame);
