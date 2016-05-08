@@ -1,5 +1,5 @@
-//Name: Jeremy Hamann, Raycole Dai, Acacia Mok
-//      Samantha Pulikottil, Adam Chen
++//Name: Jeremy Hamann, Raycole Dai, Acacia Mok
++//      Samantha Pulikottil, Adam Chen
 //Date: 03/05/16
 //Desc: Tests to see if the game works and no cheating
 
@@ -81,26 +81,42 @@ void testActions(Game g){
 }
 
 //Tests each action to see if they are legal, int isLegalAction (Game g, action a);
-//These are all the possible actions:
-/*    #define PASS 0
-      #define BUILD_CAMPUS 1
-      #define BUILD_GO8 2
-      #define OBTAIN_ARC 3
-      #define START_SPINOFF 4
-      #define OBTAIN_PUBLICATION 5
-      #define OBTAIN_IP_PATENT 6
-      #define RETRAIN_STUDENTS 7 */
-      
-void testLegalAction(Game g){
+void testLegalAction(Game g, int player){
   assert(isLegalAction(g, PASS) == TRUE);
-  assert(isLegalAction(g, BUILD_CAMPUS) == TRUE);
-  assert(isLegalAction(g, BUILD_GO8) == TRUE);
-  assert(isLegalAction(g, OBTAIN_ARC) == TRUE);
-  assert(isLegalAction(g, START_SPINOFF) == TRUE);
-  assert(isLegalAction(g, OBTAIN_PUBLICATION) == TRUE);
-  assert(isLegalAction(g, OBTAIN_IP_PATENT) == TRUE);
-  assert(isLegalAction(g, RETRAIN_STUDENTS) == TRUE);
-  
+  assert(isLegalAction(g, BUILD_CAMPUS) == TRUE &&
+          getStudents(g, player, STUDENT_BPS) >= 1 && 
+          getStudents(g, player, STUDENT_BQN) >= 1) &&
+          getStudents(g, player, STUDENT_MJ) >= 1 && 
+          getStudents(g, player, STUDENT_MTV) >= 1);
+  assert (isLegalAction(g, BUILD_GO8) == TRUE && 
+          getStudents(g, player, STUDENT_MJ) >= 2 && 
+          getStudents(g, player, STUDENT_MMONEY) >= 3);
+  assert(isLegalAction(g, OBTAIN_ARC) == TRUE &&
+          getStudents(g, player, STUDENT_BQN) >= 1 && 
+          getStudents(g, player, STUDENT_BPS) >= 1);
+  assert(isLegalAction(g, START_SPINOFF) == TRUE &&
+          getStudents(g, player, STUDENT_MJ) >= 1 && 
+          getStudents(g, player, STUDENT_MTV) >= 1 && 
+          getStudents(g, player, STUDENT_MMONEY) >= 1);
+  assert(isLegalAction(g, OBTAIN_PUBLICATION) == FALSE);
+  assert(isLegalAction(g, OBTAIN_IP_PATENT) == FALSE);
+
+  //Test Retrain_Students
+  int testStudentFrom = STUDENT_BPS;
+  int testStudentTo = STUDENT_BPS
+  while (testStudent <= STUDENT_MMONEY) {
+    while (testStudentFrom <= STUDENT_MMONEY) {
+      if (testStudentFrom != testStudentTo) {
+        assert(isLegalAction(g, RETRAIN_STUDENTS) == TRUE &&
+              getStudents(g, player, testStudentFrom) - \
+              getExchangeRate (g, player, testStudentFrom, testStudentTo) >= 0);
+      }  
+      testStudentTo ++;
+    }
+    testStudentFrom ++;
+    testStudentTo = STUDENT_BPS;
+  }
+  printf ("All isLegalAction() tests passed!\n");
 }
 
 
@@ -144,15 +160,19 @@ void testInitialState(Game g){
       assert(getStudents(g,uni,STUDENT_MMONEY)==1);
        
       //Check Uni's exchange rates
-      int exchangeRateCheck = STUDENT_BPS;
-      while(exchangeRateCheck <= STUDENT_MMONEY){
-         assert(getExchangeRate(g,uni,exchangeRateCheck,STUDENT_BPS) == 3);
-         assert(getExchangeRate(g,uni,exchangeRateCheck,STUDENT_BQN) == 3);
-         assert(getExchangeRate(g,uni,exchangeRateCheck,STUDENT_MJ) == 3);
-         assert(getExchangeRate(g,uni,exchangeRateCheck,STUDENT_MTV) == 3);
-         assert(getExchangeRate(g,uni,exchangeRateCheck,STUDENT_MMONEY) == 3);
-         discipline++;
+      int testStudentFrom = STUDENT_BPS;
+      int testStudentTo = STUDENT_BPS
+      while (testStudentFrom <= STUDENT_MMONEY) {
+        while (testStudentTo <= STUDENT_MMONEY) {
+          if (testStudentFrom != testStudentTo) {
+            assert(getExchangeRate (g, uni, testStudentFrom, testStudentTo) == 3);
+          }
+          testStudentTo ++;
+        }
+        testStudentFrom ++;
+        testStudentTo = STUDENT_BPS;
       }
       uni++;
    }
+   printf ("All initialState tests passed!\n");
 }
