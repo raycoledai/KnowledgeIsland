@@ -28,6 +28,8 @@
 
 
 void testInitialState(Game g);
+void testActions(Game g);
+void testLegalAction(Game g);
 
 int main(int argc, char * argv[]){
    //Creates a new game, based on bad map
@@ -45,12 +47,57 @@ int main(int argc, char * argv[]){
    Game goodMapGame = newGame (disciplines, dice);
    //Tests the game
    testInitialState(goodMapGame);
+   //Tests each actino to see if they are legal
+   testLegalAction(goodMapGame);
+   //Tests each action
+   testActions(goodMapGame);
    //Free's memory from game
    disposeGame(goodMapGame);
    
    printf("All tests passed, you are Awesome!\n");
    return EXIT_SUCCESS;
 }
+
+
+//Test each "void makeAction (Game g, action a)"
+//makeAction() makes the specified action for the current player and updates the game state accordingly.
+void testActions(Game g){
+  /*  #define PASS 0
+      #define BUILD_CAMPUS 1
+      #define BUILD_GO8 2
+      #define OBTAIN_ARC 3
+      #define START_SPINOFF 4
+      #define OBTAIN_PUBLICATION 5
+      #define OBTAIN_IP_PATENT 6
+      #define RETRAIN_STUDENTS 7 */
+  //You can assume that the action is LEGAL, no need to check
+  
+  
+}
+
+//Tests each action to see if they are legal, int isLegalAction (Game g, action a);
+//These are all the possible actions:
+/*    #define PASS 0
+      #define BUILD_CAMPUS 1
+      #define BUILD_GO8 2
+      #define OBTAIN_ARC 3
+      #define START_SPINOFF 4
+      #define OBTAIN_PUBLICATION 5
+      #define OBTAIN_IP_PATENT 6
+      #define RETRAIN_STUDENTS 7 */
+      
+void testLegalAction(Game g){
+  assert(isLegalAction(g, PASS) == TRUE);
+  assert(isLegalAction(g, BUILD_CAMPUS) == TRUE);
+  assert(isLegalAction(g, BUILD_GO8) == TRUE);
+  assert(isLegalAction(g, OBTAIN_ARC) == TRUE);
+  assert(isLegalAction(g, START_SPINOFF) == TRUE);
+  assert(isLegalAction(g, OBTAIN_PUBLICATION) == TRUE);
+  assert(isLegalAction(g, OBTAIN_IP_PATENT) == TRUE);
+  assert(isLegalAction(g, RETRAIN_STUDENTS) == TRUE);
+  
+}
+
 
 //Sample out testing simple things
 void testInitialState(Game g){
