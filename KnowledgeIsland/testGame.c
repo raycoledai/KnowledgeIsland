@@ -56,9 +56,17 @@ int main(int argc, char * argv[]){
 void testInitialState(Game g){
    printf("Test initialState!\n");
 
-   assert(getDiscipline(g,0) == STUDENT_BQN);
-   assert(getDiceValue(g,0) == 9);
+  //Check each region produces correct disciplines
+   int regionID = 0;
+   while (regionID < NUM_REGIONS) {
+      assert(getDiscipline(g,0) == disciplines[0]);
+   }
 
+   //Check what dice value produces students in the specified region
+   regionID = 0;
+   while (regionID < NUM_REGIONS) {
+      assert(getDiceValue(g,0) == dice[0]);
+   }
 
    assert(getMostARCs(g) == NO_ONE);
    assert(getMostPublications(g) == NO_ONE);
