@@ -56,7 +56,7 @@ typedef struct _Map {
 
 typedef struct _game {
    int currentTurn;
-   //Map map; """(map is a struct we'll make later)"""
+   Map map; //Map is a struct we'll make later
    University universities[NUM_UNIS];
    int totalGo8CampusCount;
    int mostPublications;
@@ -67,23 +67,21 @@ typedef struct _game {
 
 void initUniversity(University* university, int player);
 void initMap (Map* map, int discipline[], int dice[]);
+void initGame(Game game, int discipline[], int dice[]);
 
-int main (int argc, char * argv []) {
-   int disciplines[] = DEFAULT_DISCIPLINES;
-   int dice[] = DEFAULT_DICE;
-   Game g = newGame(disciplines, dice);
+Game newGame(int discipline[], int dice[]) {
+    Game g = malloc(sizeof(Game));
+    assert(g != NULL);
+    initGame (g, discipline, dice);
+    return g;
+}
+
+void initGame(Game g, int discipline[], int dice[]) {
    g->currentTurn = -1;
-   """initMap(&game->map, DEFAULT_DISCIPLINES, DEFAULT_DICE)""";
+   initMap(&g->map, discipline, dice);
    initUniversity(&g->universities[0], UNI_A);
    initUniversity(&g->universities[1], UNI_B);
    initUniversity(&g->universities[2], UNI_C);
-   return EXIT_SUCCESS;
-}
-
-Game newGame(int discipline[], int dice[]) {
-    Game* game = malloc(sizeof(Game));
-    assert(game != NULL);
-    return *game;
 }
 
 void initUniversity(University* university, int player) {
