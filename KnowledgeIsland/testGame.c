@@ -7,63 +7,97 @@
 #include <assert.h>
 #include "Game.h"
 
-
-#define BADMAP_DISCIPLINES {STUDENT_BQN, STUDENT_MMONEY, STUDENT_MJ, \
+#define DEFAULT_DISCIPLINES {STUDENT_BQN, STUDENT_MMONEY, STUDENT_MJ, \
                 STUDENT_MMONEY, STUDENT_MJ, STUDENT_BPS, STUDENT_MTV, \
                 STUDENT_MTV, STUDENT_BPS,STUDENT_MTV, STUDENT_BQN, \
                 STUDENT_MJ, STUDENT_BQN, STUDENT_THD, STUDENT_MJ, \
                 STUDENT_MMONEY, STUDENT_MTV, STUDENT_BQN, STUDENT_BPS}
-
-#define BADMAP_DICE {9,10,8,12,6,5,3,11,3,11,4,6,4,7,9,2,8,10,5}
-
-#define GOODMAP_DISCIPLINES {STUDENT_MMONEY, STUDENT_MJ, STUDENT_MJ, \
-                STUDENT_BQN, STUDENT_MTV, STUDENT_MJ, STUDENT_BPS, \
-                STUDENT_BPS, STUDENT_MTV,STUDENT_THD, STUDENT_BQN, \
-                STUDENT_BPS, STUDENT_MMONEY, STUDENT_MJ, STUDENT_MMONEY, \
-                STUDENT_MTV, STUDENT_BQN, STUDENT_BQN, STUDENT_BQN}
-
-#define GOODMAP_DICE {6,10,8,3,4,9,6,11,11,7,12,3,5,2,5,10,9,4,8}
-
-
-
+#define DEFAULT_DICE {9,10,8,12,6,5,3,11,3,11,4,6,4,7,9,2,8,10,5}
 
 void testInitialState(Game g);
 void testLegalAction(Game g, int player);
 
 int main(int argc, char * argv[]){
-   //Creates a new game, based on bad map
-   int bad_disciplines[] = BADMAP_DISCIPLINES;
-   int bad_dice[] = BADMAP_DICE;
-   Game badMapGame = newGame (bad_disciplines, bad_dice);
+   //Creates a new game, based on default map
+   int discipline[] = DEFAULT_DISCIPLINES;
+   int dice[] = DEFAULT_DICE;
+   Game g = newGame (discipline, dice);
    //Tests the game
-   testInitialState(badMapGame);
+   testInitialState(g);
    //Tests each actiom to see if they are legal
-   testLegalAction(badMapGame, UNI_A);
-   testLegalAction(badMapGame, UNI_B);
-   testLegalAction(badMapGame, UNI_C);
+   testLegalAction(g, UNI_A);
+   testLegalAction(g, UNI_B);
+   testLegalAction(g, UNI_C);
    //Free's memory from game
-   disposeGame(badMapGame);
-
-   //Creates a new game, based on good map
-   int good_disciplines[] = GOODMAP_DISCIPLINES;
-   int good_dice[] = GOODMAP_DICE;
-   Game goodMapGame = newGame (good_disciplines, good_dice);
-   //Tests the game
-   testInitialState(goodMapGame);
-   //Tests each action to see if they are legal
-   testLegalAction(goodMapGame, UNI_A);
-   testLegalAction(goodMapGame, UNI_B);
-   testLegalAction(goodMapGame, UNI_C);
-   //Free's memory from game
-   disposeGame(goodMapGame);
+   disposeGame(g);
 
    printf("All tests passed, you are Awesome!\n");
    return EXIT_SUCCESS;
 }
 
+//Sample out testing simple things
+void testInitialState(Game g){
+   printf("Testing initialState!\n");
+   int disciplines[] = DEFAULT_DISCIPLINES;
+   int dice[] = DEFAULT_DICE;
+   //Check each region produces correct disciplines
+   int regionID = 0;
+   while (regionID < NUM_REGIONS) {
+      assert(getDiscipline(g,regionID) == disciplines[regionID]);
+      regionID ++;
+   }
+
+   //Check what dice value produces students in the specified region
+   regionID = 0;
+   while (regionID < NUM_REGIONS) {
+      assert(getDiceValue(g,regionID) == dice[regionID]);
+      regionID ++;
+   }
+
+   assert(getMostARCs(g) == NO_ONE);
+   assert(getMostPublications(g) == NO_ONE);
+   assert(getTurnNumber(g) == -1);
+   assert(getWhoseTurn(g) == NO_ONE);
+
+   //Check individual uni values
+   int uni = UNI_A;
+   while(uni <= UNI_C){
+      assert(getKPIpoints(g,uni) == 20);
+      assert(getARCs(g,uni) == 0);
+      assert(getGO8s(g,uni) == 0);
+      assert(getCampuses(g,uni) == 2);
+      assert(getPublications(g,uni) == 0);
+      assert(getIPs(g,uni) == 0);
+
+      //Check initial student values
+      assert(getStudents(g,uni,STUDENT_THD)==0);
+      assert(getStudents(g,uni,STUDENT_BPS)==3);
+      assert(getStudents(g,uni,STUDENT_BQN)==3);
+      assert(getStudents(g,uni,STUDENT_MJ)==1);
+      assert(getStudents(g,uni,STUDENT_MTV)==1);
+      assert(getStudents(g,uni,STUDENT_MMONEY)==1);
+
+      //Check Uni's exchange rates
+      int testStudentFrom = STUDENT_BPS;
+      int testStudentTo = STUDENT_BPS;
+      while (testStudentFrom <= STUDENT_MMONEY) {
+         while (testStudentTo <= STUDENT_MMONEY) {
+            if (testStudentFrom != testStudentTo) {
+               assert(getExchangeRate (g, uni, testStudentFrom, testStudentTo) == 3);
+            }
+            testStudentTo ++;
+         }
+         testStudentFrom ++;
+         testStudentTo = STUDENT_BPS;
+      }
+      uni++;
+   }
+   printf ("All initialState tests passed!\n");
+}
+
 //Tests each action to see if they are legal, int isLegalAction (Game g, action a);
 void testLegalAction(Game g, int player){
-   printf("Test isLegalAction!\n");
+   printf("Testing isLegalAction!\n");
    action passAction;
    action CampusAction;
    action GO8Action;
@@ -140,65 +174,4 @@ void testLegalAction(Game g, int player){
       retrainAction.disciplineTo = STUDENT_BPS;
    }
    printf ("All isLegalAction() tests passed!\n");
-}
-
-
-//Sample out testing simple things
-void testInitialState(Game g){
-   printf("Test initialState!\n");
-   int disciplines[] = GOODMAP_DISCIPLINES;
-   int dice[] = GOODMAP_DICE;
-   //Check each region produces correct disciplines
-   int regionID = 0;
-   while (regionID < NUM_REGIONS) {
-      assert(getDiscipline(g,regionID) == disciplines[regionID]);
-      regionID ++;
-   }
-
-   //Check what dice value produces students in the specified region
-   regionID = 0;
-   while (regionID < NUM_REGIONS) {
-      assert(getDiceValue(g,regionID) == dice[regionID]);
-      regionID ++;
-   }
-
-   assert(getMostARCs(g) == NO_ONE);
-   assert(getMostPublications(g) == NO_ONE);
-   assert(getTurnNumber(g) == -1);
-   assert(getWhoseTurn(g) == NO_ONE);
-
-   //Check individual uni values
-   int uni = UNI_A;
-   while(uni <= UNI_C){
-      assert(getKPIpoints(g,uni) == 20);
-      assert(getARCs(g,uni) == 0);
-      assert(getGO8s(g,uni) == 0);
-      assert(getCampuses(g,uni) == 2);
-      assert(getPublications(g,uni) == 0);
-      assert(getIPs(g,uni) == 0);
-
-      //Check initial student values
-      assert(getStudents(g,uni,STUDENT_THD)==0);
-      assert(getStudents(g,uni,STUDENT_BPS)==3);
-      assert(getStudents(g,uni,STUDENT_BQN)==3);
-      assert(getStudents(g,uni,STUDENT_MJ)==1);
-      assert(getStudents(g,uni,STUDENT_MTV)==1);
-      assert(getStudents(g,uni,STUDENT_MMONEY)==1);
-
-      //Check Uni's exchange rates
-      int testStudentFrom = STUDENT_BPS;
-      int testStudentTo = STUDENT_BPS;
-      while (testStudentFrom <= STUDENT_MMONEY) {
-         while (testStudentTo <= STUDENT_MMONEY) {
-            if (testStudentFrom != testStudentTo) {
-               assert(getExchangeRate (g, uni, testStudentFrom, testStudentTo) == 3);
-            }
-            testStudentTo ++;
-         }
-         testStudentFrom ++;
-         testStudentTo = STUDENT_BPS;
-      }
-      uni++;
-   }
-   printf ("All initialState tests passed!\n");
 }
