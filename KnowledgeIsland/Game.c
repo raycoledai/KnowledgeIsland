@@ -3,6 +3,14 @@
 #include <assert.h>
 #include "Game.h"
 
+#define DEFAULT_DISCIPLINES {STUDENT_BQN, STUDENT_MMONEY, STUDENT_MJ, \
+                STUDENT_MMONEY, STUDENT_MJ, STUDENT_BPS, STUDENT_MTV, \
+                STUDENT_MTV, STUDENT_BPS,STUDENT_MTV, STUDENT_BQN, \
+                STUDENT_MJ, STUDENT_BQN, STUDENT_THD, STUDENT_MJ, \
+                STUDENT_MMONEY, STUDENT_MTV, STUDENT_BQN, STUDENT_BPS}
+#define DEFAULT_DICE {9,10,8,12,6,5,3,11,3,11,4,6,4,7,9,2,8,10,5}
+
+
 #define KPI_PER_ARC 2
 #define KPI_PER_CAMPUS 10
 #define KPI_PER_GO8 20
@@ -20,30 +28,36 @@
 #define START_NUM_PATENTS 0
 
 typedef struct _StudentCount {
-    int thd;
-    int bps;
-    int bqn;
-    int mj;
-    int mtv;
-    int mmoney;
+   int thd;
+   int bps;
+   int bqn;
+   int mj;
+   int mtv;
+   int mmoney;
+   //COMPLETED
 } StudentCount;
 
 typedef struct _University {
-    int playerId;
-    StudentCount studentCount;
-    int publicationCount;
-    int patentCount;
-    int ownedCampusCount;
-    //something to store ownedCampuses;
-    int ownedArcCount;
-    //something to store ownedArcs;
+   int playerId;
+   StudentCount studentCount;
+   int publicationCount;
+   int patentCount;
+   int ownedCampusCount;
+   //Add something to STORE ownedCampuses;
+   int ownedArcCount;
+   //Add something to STORE ownedArcs;
 } University;
+
+typedef struct _Map {
+   //MEDIUM-HARD
+   //Add stuff here
+   //Include co-ords, regionID, discplines, dice
+} Map;
 
 typedef struct _game {
    int currentTurn;
-   //Map map; //(map is a struct we'll make later)
-   University universities[NUM_UNIS]; //(university is also another struct for later)
-
+   //Map map; """(map is a struct we'll make later)"""
+   University universities[NUM_UNIS];
    int totalGo8CampusCount;
    int mostPublications;
    int mostPublicationsPlayer;
@@ -52,35 +66,45 @@ typedef struct _game {
 } game;
 
 void initUniversity(University* university, int player);
+void initMap (Map* map, int discipline[], int dice[]);
 
 int main (int argc, char * argv []) {
+   int disciplines[] = DEFAULT_DISCIPLINES;
+   int dice[] = DEFAULT_DICE;
+   Game g = newGame(disciplines, dice);
+   g->currentTurn = -1;
+   """initMap(&game->map, DEFAULT_DISCIPLINES, DEFAULT_DICE)""";
+   initUniversity(&g->universities[0], UNI_A);
+   initUniversity(&g->universities[1], UNI_B);
+   initUniversity(&g->universities[2], UNI_C);
    return EXIT_SUCCESS;
 }
 
-void initUniversity(University* university, int player) {
-    university->playerId = player;
-
-    university->studentCount.thd = START_NUM_THD;
-    university->studentCount.bps = START_NUM_BPS;
-    university->studentCount.bqn = START_NUM_BQN;
-    university->studentCount.mj = START_NUM_MJ;
-    university->studentCount.mtv = START_NUM_MTV;
-    university->studentCount.mmoney = START_NUM_MMONEY;
-    university->publicationCount = START_NUM_PUBLICATIONS;
-    university->patentCount = START_NUM_PATENTS;
-    university->ownedCampusCount = 2;
-    //something to initialise owned campuses
-    university->ownedArcCount = 0;
-    //something to initialise owned ARCs
+Game newGame(int discipline[], int dice[]) {
+    Game* game = malloc(sizeof(Game));
+    assert(game != NULL);
+    return *game;
 }
 
+void initUniversity(University* university, int player) {
+   university->playerId = player;
+   university->studentCount.thd = START_NUM_THD;
+   university->studentCount.bps = START_NUM_BPS;
+   university->studentCount.bqn = START_NUM_BQN;
+   university->studentCount.mj = START_NUM_MJ;
+   university->studentCount.mtv = START_NUM_MTV;
+   university->studentCount.mmoney = START_NUM_MMONEY;
+   university->publicationCount = START_NUM_PUBLICATIONS;
+   university->patentCount = START_NUM_PATENTS;
+   university->ownedCampusCount = 2;
+   """Add something to initialise owned campuses""";
+   university->ownedArcCount = 0;
+   """Add something to initialise owned ARCs""";
+}
 
-// make the specified action for the current player and update the
-// game state accordingly.
-// The function may assume that the action requested is legal.
-// START_SPINOFF is not a legal action here
-void makeAction (Game g, action a) {
-//MEDIUM-HARD
+void initMap (Map* map, int discipline[], int dice[]) {
+   //MEDIUM-HARD
+   """Add stuff here after Map struct is complete""";
 }
 
 // advance the game to the next turn,
@@ -88,16 +112,26 @@ void makeAction (Game g, action a) {
 // the game starts in turn -1 (we call this state "Terra Nullis") and
 // moves to turn 0 as soon as the first dice is thrown.
 void throwDice (Game g, int diceScore) {
-//MEDIUM-HARD
+//MEDIUM
+   """MISLEADING FUNCTION NAME-NOT ACTUALLY THROWING DICE""";
+   """Dice has already been thrown, which is given in diceScore,\
+      Make stuff happen after the Dice is thrown:\
+         - Go through the map and give students to unis which have\
+           campuses on regions which give students corresponding to\
+           diceScore.\
+         - Implement Roll 7 ThD Rule""";
+   g->currentTurn++; //Increases current turn by 1 FIRST
+   //ADD STUFF HERE
 }
 
-/* **** Functions which GET data about the game aka GETTERS **** */
+"""@@@@ Functions which GET data about the game aka GETTERS @@@@"""
 
 // what type of students are produced by the specified region?
 // regionID is the index of the region in the newGame arrays (above)
 // see discipline codes above
 int getDiscipline (Game g, int regionID) {
 //MEDIUM
+   """Make this after Map is done""";
    return 0;
 }
 
@@ -105,44 +139,22 @@ int getDiscipline (Game g, int regionID) {
 // 2..12
 int getDiceValue (Game g, int regionID) {
 //MEDIUM
+   """Make this after Map is done""";
    return 0;
-}
-
-// which university currently has the prestige award for the most ARCs?
-// this is NO_ONE until the first arc is purchased after the game
-// has started.
-int getMostARCs (Game g) {
-//EASY-MEDIUM
-   return g->mostArcsPlayer;
-}
-
-// which university currently has the prestige award for the most pubs?
-// this is NO_ONE until the first publication is made.
-int getMostPublications (Game g) {
-//EASY-MEDIUM
-   return g->mostPublicationsPlayer;
 }
 
 // return the current turn number of the game -1,0,1, ..
 int getTurnNumber (Game g) {
    return g->currentTurn;
+   //COMPLETED
 }
 
 // return the player id of the player whose turn it is
 // the result of this function is NO_ONE during Terra Nullis
 int getWhoseTurn (Game g) {
    return (g->currentTurn + 3) % 3;
+   //COMPLETED
 }
-
-// return the contents of the given vertex (ie campus code or
-// VACANT_VERTEX)
-int getCampus(Game g, path pathToVertex) {
-//MEDIUM
-   return 0;
-}
-
-// the contents of the given edge (ie ARC code or vacent ARC)
-int getARC(Game g, path pathToEdge);
 
 // returns TRUE if it is legal for the current
 // player to make the specified action, FALSE otherwise.
@@ -175,49 +187,99 @@ int isLegalAction (Game g, action a) {
    return 0;
 }
 
+// make the specified action for the current player and update the
+// game state accordingly.
+// The function may assume that the action requested is legal.
+// START_SPINOFF is not a legal action here
+void makeAction (Game g, action a) {
+//MEDIUM-HARD
+/* For easy reference #defined action codes:
+   #define PASS 0                #define BUILD_CAMPUS 1
+   #define BUILD_GO8 2           #define OBTAIN_ARC 3
+   #define START_SPINOFF 4       #define OBTAIN_PUBLICATION 5
+   #define OBTAIN_IP_PATENT 6    #define RETRAIN_STUDENTS 7 */
+   """Make sure to update Game Data *AFTER* an action is *COMPLETED*\
+      perhaps make a function for updating.""";
+   """Update mostARCsPlayer""";
+   """Update mostPublicationsPlayer""";
 
+}
 
-// return the number of KPI points the specified player currently has
-int getKPIpoints (Game g, int player){
-//EASY-MEDIUM
-/* #defines used for scoring:
-#define KPI_PER_ARC 2
-#define KPI_PER_CAMPUS 10
-#define KPI_PER_GO8 20
-#define KPI_PER_PATENT 10
-#define KPI_FOR_MOST_PUBS 10
-#define KPI_FOR_MOST_ARCS 10
-*/
+// return the contents of the given vertex (ie campus code or
+// VACANT_VERTEX)
+int getCampus(Game g, path pathToVertex) {
+//MEDIUM
+   """Make this after Map is done""";
    return 0;
+}
+
+// the contents of the given edge (ie ARC code or vacent ARC)
+int getARC(Game g, path pathToEdge) {
+   """Make this after Map is done""";
+   return 0;
+}
+
+// which university currently has the prestige award for the most ARCs?
+// this is NO_ONE until the first arc is purchased after the game
+// has started.
+int getMostARCs (Game g) {
+//EASY-MEDIUM
+   return g->mostArcsPlayer;
+   //COMPLETED
+}
+
+// which university currently has the prestige award for the most pubs?
+// this is NO_ONE until the first publication is made.
+int getMostPublications (Game g) {
+//EASY-MEDIUM
+   return g->mostPublicationsPlayer;
+   //COMPLETED
 }
 
 // return the number of ARC grants the specified player currently has
 int getARCs (Game g, int player) {
 //EASY
-   return 0;
+   return g->universities[player].ownedArcCount;
+   //COMPLETED
 }
 
 // return the number of GO8 campuses the specified player currently has
 int getGO8s (Game g, int player) {
-//EASY
+//EASY-MEDIUM
+   """You will need to make another function that goes through the\
+   university's campuses and check to see if they are GO8 or normal""";
    return 0;
 }
 
 // return the number of normal Campuses the specified player currently has
 int getCampuses (Game g, int player) {
-//EASY
+//EASY-MEDIUM
+   """You will need to make another function that goes through the\
+   university's campuses and check to see if they are GO8 or normal""";
    return 0;
 }
 
 // return the number of IP Patents the specified player currently has
 int getIPs (Game g, int player) {
 //EASY
-   return 0;
+   return g->universities[player].patentCount;
+   //COMPLETED
 }
 
 // return the number of Publications the specified player currently has
 int getPublications (Game g, int player) {
 //EASY
+   return g->universities[player].publicationCount;
+   //COMPLETED
+}
+
+// return the number of KPI points the specified player currently has
+int getKPIpoints (Game g, int player){
+//EASY-MEDIUM
+/* For easy reference: #defines used for scoring:
+   #define KPI_PER_ARC 2         #define KPI_PER_PATENT 10
+   #define KPI_PER_CAMPUS 10     #define KPI_PER_GO8 20
+   #define KPI_FOR_MOST_PUBS 10  #define KPI_FOR_MOST_ARCS 10 */
    return 0;
 }
 
@@ -239,6 +301,7 @@ int getStudents (Game g, int player, int discipline) {
       students = g->universities[player].studentCount.mmoney;
    }
    return students;
+   //COMPLETED
 }
 
 // return how many students of discipline type disciplineFrom
@@ -247,6 +310,7 @@ int getStudents (Game g, int player, int discipline) {
 // on what retraining centers, if any, they have a campus at.
 int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 //MEDIUM
+   """Can start but will need MAP to finish""";
    return 0;
 }
 
