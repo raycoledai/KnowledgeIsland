@@ -29,6 +29,9 @@
 
 #define NUM_VERTICES 54
 #define NUM_EDGES 72
+#define SIDE_VERTICAL 0
+#define SIDE_FORWARDSLASH 1 //"/"
+#define SIDE_BACKSLASH 2    //"\"
 
 typedef struct _StudentCount {
    int thd;
