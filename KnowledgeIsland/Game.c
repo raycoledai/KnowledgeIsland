@@ -53,7 +53,6 @@ typedef struct _University {
 
 typedef struct _Region {
     RegionLocation location;
-    int isSea;
     int disciplineValue;
     int diceValue; // Number on the hexagon
 } Region;
