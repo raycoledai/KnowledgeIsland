@@ -27,6 +27,9 @@
 #define START_NUM_PUBLICATIONS 0
 #define START_NUM_PATENTS 0
 
+#define NUM_VERTICES 54
+#define NUM_EDGES 72
+
 typedef struct _StudentCount {
    int thd;
    int bps;
@@ -48,15 +51,37 @@ typedef struct _University {
    //Add something to STORE ownedArcs;
 } University;
 
+typedef struct _Region {
+    RegionLocation location;
+    int isSea;
+    int disciplineValue;
+    int diceValue; // Number on the hexagon
+} Region;
+
+typedef struct _Edge {
+   EdgeLocation location;
+   int isOwned;
+   int uniID;
+} Edge;
+
+typedef struct _Vertex {
+   VertexLocation location;
+   int isOwned;
+   int isGo8Campus;
+   int uniID;
+} Vertex;
+
 typedef struct _Map {
    //MEDIUM-HARD
-   //Add stuff here
    //Include co-ords, regionID, discplines, dice
+   Region regions[NUM_REGIONS];
+   Edge edges[NUM_EDGES];
+   Vertex vertices[NUM_VERTICES];
 } Map;
 
 typedef struct _game {
    int currentTurn;
-   Map map; //Map is a struct we'll make later
+   Map map;
    University universities[NUM_UNIS];
    int totalGo8CampusCount;
    int mostPublications;
@@ -67,6 +92,9 @@ typedef struct _game {
 
 void initUniversity(University* university, int player);
 void initMap (Map* map, int discipline[], int dice[]);
+void initRegions (map->regions, discipline, dice);
+void initEdges (map->edges);
+void initVertices (map->vertices);
 void initGame(Game game, int discipline[], int dice[]);
 
 Game newGame(int discipline[], int dice[]) {
@@ -103,6 +131,19 @@ void initUniversity(University* university, int player) {
 void initMap (Map* map, int discipline[], int dice[]) {
    //MEDIUM-HARD
    """Add stuff here after Map struct is complete""";
+   initRegions (map->regions, discipline, dice);
+   initEdges (map->edges);
+   initVertices (map->vertices);
+}
+
+void initRegions (map->regions, discipline, dice) {
+
+}
+void initEdges (map->edges) {
+
+}
+void initVertices (map->vertices) {
+
 }
 
 // advance the game to the next turn,
