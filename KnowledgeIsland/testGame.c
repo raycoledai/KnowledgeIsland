@@ -121,23 +121,23 @@ void testLegalAction(Game g, int player){
           getStudents(g, player, STUDENT_MJ) >= 1 &&
           getStudents(g, player, STUDENT_MTV) >= 1);
    assert(isLegalAction(g, CampusAction) == FALSE &&
-          (getStudents(g, player, STUDENT_BPS) < 1) |
-          (getStudents(g, player, STUDENT_BQN) < 1) |
-          (getStudents(g, player, STUDENT_MJ) < 1) |
+          (getStudents(g, player, STUDENT_BPS) < 1) ||
+          (getStudents(g, player, STUDENT_BQN) < 1) ||
+          (getStudents(g, player, STUDENT_MJ) < 1) ||
           (getStudents(g, player, STUDENT_MTV) < 1));
 
    assert (isLegalAction(g, GO8Action) == TRUE &&
           getStudents(g, player, STUDENT_MJ) >= 2 &&
           getStudents(g, player, STUDENT_MMONEY) >= 3);
    assert (isLegalAction(g, GO8Action) == FALSE &&
-          (getStudents(g, player, STUDENT_MJ) < 2) |
+          (getStudents(g, player, STUDENT_MJ) < 2) ||
           (getStudents(g, player, STUDENT_MMONEY) < 3));
 
    assert(isLegalAction(g, ARCAction) == TRUE &&
           getStudents(g, player, STUDENT_BQN) >= 1 &&
           getStudents(g, player, STUDENT_BPS) >= 1);
    assert(isLegalAction(g, ARCAction) == FALSE &&
-         (getStudents(g, player, STUDENT_BQN) < 1) |
+         (getStudents(g, player, STUDENT_BQN) < 1) ||
          (getStudents(g, player, STUDENT_BPS) < 1));
 
    assert(isLegalAction(g, spinoffAction) == TRUE &&
@@ -145,8 +145,8 @@ void testLegalAction(Game g, int player){
           getStudents(g, player, STUDENT_MTV) >= 1 &&
           getStudents(g, player, STUDENT_MMONEY) >= 1);
    assert(isLegalAction(g, spinoffAction) == FALSE &&
-         (getStudents(g, player, STUDENT_MJ) < 1) |
-         (getStudents(g, player, STUDENT_MTV) < 1) |
+         (getStudents(g, player, STUDENT_MJ) < 1) ||
+         (getStudents(g, player, STUDENT_MTV) < 1) ||
          (getStudents(g, player, STUDENT_MMONEY) < 1));
 
    assert(isLegalAction(g, publicationAction) == FALSE);

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <math.h>
 #include "Game.h"
 
 #define DEFAULT_DISCIPLINES {STUDENT_BQN, STUDENT_MMONEY, STUDENT_MJ, \
@@ -29,7 +30,7 @@
 
 #define NUM_VERTICES 54
 #define NUM_EDGES 72
-#define SIDE_VERTICAL 0
+#define SIDE_VERTICAL 0 //"|"
 #define SIDE_FORWARDSLASH 1 //"/"
 #define SIDE_BACKSLASH 2    //"\"
 
@@ -54,22 +55,39 @@ typedef struct _University {
    //Add something to STORE ownedArcs;
 } University;
 
+typedef struct _regionLoc {
+   int x;
+   int y;
+} regionLoc;
+
+typedef struct _edgeLoc {
+   regionLoc region0;
+   regionLoc region1;
+} edgeLoc;
+
+typedef struct _vertexLoc {
+   regionLoc region0;
+   regionLoc region1;
+   regionLoc region2;
+} vertexLoc;
+
 typedef struct _Region {
-    RegionLocation location;
+    regionLoc location;
+    int regionID;
     int disciplineValue;
     int diceValue; // Number on the hexagon
 } Region;
 
 typedef struct _Edge {
-   EdgeLocation location;
+   edgeLoc location;
+   int edgeType;
    int isOwned;
    int uniID;
 } Edge;
 
 typedef struct _Vertex {
-   VertexLocation location;
+   vertexLoc location;
    int isOwned;
-   int isGo8Campus;
    int uniID;
 } Vertex;
 
@@ -94,9 +112,11 @@ typedef struct _game {
 
 void initUniversity(University* university, int player);
 void initMap (Map* map, int discipline[], int dice[]);
-void initRegions (map->regions, discipline, dice);
-void initEdges (map->edges);
-void initVertices (map->vertices);
+void initRegions (Region* r, int discipline[], int dice[]);
+void initEdges (Edge* e);
+int findEdgeType (int x, int y);
+void initVertices (Vertex* v);
+int checkPoint (int x, int y);
 void initGame(Game game, int discipline[], int dice[]);
 
 Game newGame(int discipline[], int dice[]) {
@@ -114,6 +134,169 @@ void initGame(Game g, int discipline[], int dice[]) {
    initUniversity(&g->universities[2], UNI_C);
 }
 
+void initMap (Map* map, int discipline[], int dice[]) {
+   //MEDIUM-HARD
+   initRegions (map->regions, discipline, dice);
+   initEdges (map->edges);
+   initVertices (map->vertices);
+}
+
+void initRegions (Region* r, int discipline[], int dice[]) {
+   int regionNum = 0;
+   int realignNum = 0;
+   int realignRegionNum[NUM_REGIONS] = {7,12,16,3,8,13,17,0,4,9,14,18,
+                                        1,5,10,15,2,6,11};
+   int x = -2;
+   int y = 4;
+   int end_x = x*(-1);
+   regionLoc loc;
+   while (y >= -4) {
+      loc.y = y;
+      while (x <= end_x) {
+         loc.x = x;
+         realignNum = realignRegionNum[regionNum];
+         r[realignNum].location = loc;
+         r[realignNum].regionID = realignNum;
+         r[realignNum].disciplineValue = discipline[realignNum];
+         r[realignNum].diceValue = dice[realignNum];
+/*         printf("Region %d, (%d,%d), deg: %d, dice: %d\n", r[realignNum].regionID,
+      r[realignNum].location.x, r[realignNum].location.y, r[realignNum].disciplineValue,
+      r[realignNum].diceValue);*/
+         x = x+2;
+         regionNum++;
+      }
+      if (y==4||y==0) {
+         x = -3;
+      } else if (y==2) {
+         x = -4;
+      } else if (y==-2) {
+         x = -2;
+      }
+      end_x = x*(-1);
+      y = y-2;
+   }
+}
+
+void initEdges (Edge* e) {
+   int edgeNum = 0;
+   int edgeType;
+   int x = -3;
+   int y = 5;
+   int end_x = x*(-1);
+   regionLoc loc;
+   while (y >= -5) {
+      loc.y = y;
+      if (y%2== 1||y%2==-1) {
+         while (x < end_x) {
+            loc.x = x;
+            edgeType = findEdgeType(x,y);
+            e[edgeNum].location.region0 = loc;
+            loc.x = x+1;
+            e[edgeNum].location.region1 = loc;
+            e[edgeNum].edgeType = edgeType;
+            e[edgeNum].isOwned = VACANT_ARC;
+            e[edgeNum].uniID = NO_ONE;
+            x++;
+/*            printf("Edge (%d,%d), (%d,%d), type: %d\n",
+   e[edgeNum].location.region0.x, e[edgeNum].location.region0.y,
+   e[edgeNum].location.region1.x, e[edgeNum].location.region1.y,
+   e[edgeNum].edgeType);
+*/
+         }
+      } else {
+         while (x <= end_x) {
+            loc.x = x;
+            loc.y = y+1;
+            edgeType = SIDE_VERTICAL;
+            e[edgeNum].location.region0 = loc;
+            loc.y = y-1;
+            e[edgeNum].location.region1 = loc;
+            e[edgeNum].edgeType = edgeType;
+            e[edgeNum].isOwned = VACANT_ARC;
+            e[edgeNum].uniID = NO_ONE;
+            x = x+2;
+/*            printf("Edge (%d,%d), (%d,%d), type: %d\n",
+   e[edgeNum].location.region0.x, e[edgeNum].location.region0.y,
+   e[edgeNum].location.region1.x, e[edgeNum].location.region1.y,
+   e[edgeNum].edgeType);
+*/
+         }
+      }
+      if (y==5||y==-3||y==-4) {
+         x = -3;
+      } else if (y==4||y==3||y==-1||y==-2) {
+         x = -4;
+      } else if (y==2||y==1||y==0) {
+         x = -5;
+      }
+      end_x = x*(-1);
+      y--;
+      printf("NEW ROW\n");
+   }
+}
+
+int findEdgeType (int x, int y) {
+   int result;
+   y--;
+   if (((x%2==1||x%2==-1) && y%4==0) || (x%2==0 && (y%4==2||y%4==-2))) {
+      result = SIDE_FORWARDSLASH;
+   } else {
+      result = SIDE_BACKSLASH;
+   }
+   return result;
+}
+
+void initVertices (Vertex* v) {
+   int edgeNum = 0;
+   int isOwned;
+   int uniID;
+   int x = -3;
+   int y = 5;
+   int end_x = x*(-1);
+   regionLoc loc;
+   while (y >= -5) {
+      loc.y = y;
+      while (x < end_x) {
+         loc.x = x;
+         v[vertexNum].location.region0 = loc;
+         loc.x = x+1;
+         v[vertexNum].location.region1 = loc;
+         v[vertexNum].location.region2 = loc;
+         v[edgeNum].isOwned = VACANT_VERTEX;
+         v[edgeNum].uniID = NO_ONE;
+         x++;
+   /*    printf("Edge (%d,%d), (%d,%d), type: %d\n",
+   e[edgeNum].location.region0.x, e[edgeNum].location.region0.y,
+   e[edgeNum].location.region1.x, e[edgeNum].location.region1.y,
+   e[edgeNum].edgeType);
+   */
+      }
+      if (y==5||y==-1) {
+         x = -4;
+      } else if (y==3||y==1) {
+         x = -5;
+      } else if (y==-3) {
+         x = -3;
+      }
+      end_x = x*(-1);
+      y = y-2;
+   }
+}
+
+int checkPoint (int x, int y) {
+   int point = FALSE;
+   if (y%2 == 1) {
+      if (abs(x) <=3 && abs(y) <=5) {
+         point = TRUE;
+      } else if (abs(x) <= 4 && abs(y) <= 3) {
+         point = TRUE;
+      } else if (abs(x) <= 5 && abs(y) <= 1) {
+         point = TRUE;
+      }
+    }
+    return point;
+}
+
 void initUniversity(University* university, int player) {
    university->playerId = player;
    university->studentCount.thd = START_NUM_THD;
@@ -128,24 +311,6 @@ void initUniversity(University* university, int player) {
    """Add something to initialise owned campuses""";
    university->ownedArcCount = 0;
    """Add something to initialise owned ARCs""";
-}
-
-void initMap (Map* map, int discipline[], int dice[]) {
-   //MEDIUM-HARD
-   """Add stuff here after Map struct is complete""";
-   initRegions (map->regions, discipline, dice);
-   initEdges (map->edges);
-   initVertices (map->vertices);
-}
-
-void initRegions (map->regions, discipline, dice) {
-
-}
-void initEdges (map->edges) {
-
-}
-void initVertices (map->vertices) {
-
 }
 
 // advance the game to the next turn,
@@ -165,23 +330,21 @@ void throwDice (Game g, int diceScore) {
    //ADD STUFF HERE
 }
 
-"""@@@@ Functions which GET data about the game aka GETTERS @@@@"""
+//"""@@@@ Functions which GET data about the game aka GETTERS @@@@"""
 
 // what type of students are produced by the specified region?
 // regionID is the index of the region in the newGame arrays (above)
 // see discipline codes above
 int getDiscipline (Game g, int regionID) {
 //MEDIUM
-   """Make this after Map is done""";
-   return 0;
+   return g->map.regions[regionID].disciplineValue;
 }
 
 // what dice value produces students in the specified region?
 // 2..12
 int getDiceValue (Game g, int regionID) {
 //MEDIUM
-   """Make this after Map is done""";
-   return 0;
+   return g->map.regions[regionID].diceValue;
 }
 
 // return the current turn number of the game -1,0,1, ..
