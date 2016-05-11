@@ -36,6 +36,9 @@
 #define CENTRE_MTV 4
 #define CENTRE_MMONEY 5
 
+#define DEFAULT_EXCHANGE_RATE 3
+#define TRAINING_CENTRE_RATE 2
+
 //Starting students allocated
 #define START_NUM_THD 0
 #define START_NUM_BPS 3
@@ -391,7 +394,7 @@ int checkPoint (int x, int y) {
 
 void initUniversity(University* university, int player) {
    //Initialise the universities
-   university->playerId = player; //uniID, which is 1,2or3
+   university->playerId = player; //uniID, which is 1,2 or 3
    //Give the universities their starting students
    university->studentCount.thd = START_NUM_THD;
    university->studentCount.bps = START_NUM_BPS;
@@ -402,9 +405,7 @@ void initUniversity(University* university, int player) {
    university->publicationCount = START_NUM_PUBLICATIONS;
    university->patentCount = START_NUM_PATENTS;
    university->ownedCampusCount = 2;
-   //university->ownedCampuses = {0};
    university->ownedArcCount = 0;
-   //university->ownedArcs = {0};
 }
 
 // advance the game to the next turn,
@@ -614,10 +615,19 @@ int getStudents (Game g, int player, int discipline) {
 // on what retraining centers, if any, they have a campus at.
 int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 //MEDIUM
-   """If a university has a campus on a retraining centre, then\
-      it only takes 2 students of type of retraining centre, to train\
-      into any other type of student.""";
-   return 0;
+   int rate = DEFAULT_EXCHANGE_RATE;
+   int totalcampuses = g->universities[player].ownedCampusCount;
+   int centre;
+   int i = 0;
+   while (i < totalcampuses) {
+      centre = g->universities[player].ownedCampuses[i].retrainingCentre;
+      if (disciplineFrom == centre) {
+         rate = TRAINING_CENTRE_RATE;
+      }
+      i++;
+   }
+   return rate;
+   //COMPLETED
 }
 
 // free all the memory malloced for the game

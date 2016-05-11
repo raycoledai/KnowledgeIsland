@@ -62,6 +62,21 @@ void testInitialState(Game g){
    //Check individual uni values
    int uni = UNI_A;
    while(uni <= UNI_C){
+
+      //Check Uni's exchange rates
+      int testStudentFrom = STUDENT_BPS;
+      int testStudentTo = STUDENT_BPS;
+      while (testStudentFrom <= STUDENT_MMONEY) {
+         while (testStudentTo <= STUDENT_MMONEY) {
+            if (testStudentFrom != testStudentTo) {
+               assert(getExchangeRate (g, uni, testStudentFrom, testStudentTo) == 3);
+            }
+            testStudentTo ++;
+         }
+         testStudentFrom ++;
+         testStudentTo = STUDENT_BPS;
+      }
+      
       assert(getKPIpoints(g,uni) == 20);
       assert(getARCs(g,uni) == 0);
       assert(getGO8s(g,uni) == 0);
@@ -77,19 +92,7 @@ void testInitialState(Game g){
       assert(getStudents(g,uni,STUDENT_MTV)==1);
       assert(getStudents(g,uni,STUDENT_MMONEY)==1);
 
-      //Check Uni's exchange rates
-      int testStudentFrom = STUDENT_BPS;
-      int testStudentTo = STUDENT_BPS;
-      while (testStudentFrom <= STUDENT_MMONEY) {
-         while (testStudentTo <= STUDENT_MMONEY) {
-            if (testStudentFrom != testStudentTo) {
-               assert(getExchangeRate (g, uni, testStudentFrom, testStudentTo) == 3);
-            }
-            testStudentTo ++;
-         }
-         testStudentFrom ++;
-         testStudentTo = STUDENT_BPS;
-      }
+
       uni++;
    }
    printf ("All initialState tests passed!\n");
