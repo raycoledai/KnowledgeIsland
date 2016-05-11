@@ -11,7 +11,13 @@
                 STUDENT_MMONEY, STUDENT_MTV, STUDENT_BQN, STUDENT_BPS}
 #define DEFAULT_DICE {9,10,8,12,6,5,3,11,3,11,4,6,4,7,9,2,8,10,5}
 
+//Boundaries
+#define NUM_VERTICES 54
+#define NUM_EDGES 72
+#define MAX_OWNED_CAMPUSES 27
+#define MAX_OWNED_ARCS 72
 
+//KPI Point System
 #define KPI_PER_ARC 2
 #define KPI_PER_CAMPUS 10
 #define KPI_PER_GO8 20
@@ -19,9 +25,15 @@
 #define KPI_FOR_MOST_PUBS 10
 #define KPI_FOR_MOST_ARCS 10
 
-#define MAX_OWNED_CAMPUSES 27
-#define MAX_OWNED_ARCS 72
+//trainingCentre IDs
+#define NO_CENTRE 0
+#define CENTRE_BPS 1
+#define CENTRE_BQN 2
+#define CENTRE_MJ  3
+#define CENTRE_MTV 4
+#define CENTRE_MMONEY 5
 
+//Starting students allocated
 #define START_NUM_THD 0
 #define START_NUM_BPS 3
 #define START_NUM_BQN 3
@@ -31,8 +43,7 @@
 #define START_NUM_PUBLICATIONS 0
 #define START_NUM_PATENTS 0
 
-#define NUM_VERTICES 54
-#define NUM_EDGES 72
+//Hexagon side type
 #define SIDE_VERTICAL 0 //"|"
 #define SIDE_FORWARDSLASH 1 //"/"
 #define SIDE_BACKSLASH 2    //"\"
@@ -258,7 +269,7 @@ void initVertices (Vertex* v) {
       while (x <= end_x) {
          loc.x = x;
          v[vertexNum].location = loc;
-         v[vertexNum].retrainingCentre = NONE;
+         v[vertexNum].retrainingCentre = NO_CENTRE;
          v[vertexNum].isOwned = VACANT_VERTEX;
          v[vertexNum].uniID = NO_ONE;
          addRegions(v[vertexNum].regions, x, y);
