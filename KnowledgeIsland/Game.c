@@ -19,6 +19,9 @@
 #define KPI_FOR_MOST_PUBS 10
 #define KPI_FOR_MOST_ARCS 10
 
+#define MAX_OWNED_CAMPUSES 27
+#define MAX_OWNED_ARCS 72
+
 #define START_NUM_THD 0
 #define START_NUM_BPS 3
 #define START_NUM_BQN 3
@@ -34,42 +37,15 @@
 #define SIDE_FORWARDSLASH 1 //"/"
 #define SIDE_BACKSLASH 2    //"\"
 
-typedef struct _StudentCount {
-   int thd;
-   int bps;
-   int bqn;
-   int mj;
-   int mtv;
-   int mmoney;
-   //COMPLETED
-} StudentCount;
-
-typedef struct _University {
-   int playerId;
-   StudentCount studentCount;
-   int publicationCount;
-   int patentCount;
-   int ownedCampusCount;
-   //Add something to STORE ownedCampuses;
-   int ownedArcCount;
-   //Add something to STORE ownedArcs;
-} University;
-
 typedef struct _regionLoc {
    int x;
    int y;
 } regionLoc;
 
 typedef struct _edgeLoc {
-   regionLoc region0;
-   regionLoc region1;
+   regionLoc point0;
+   regionLoc point1;
 } edgeLoc;
-
-typedef struct _vertexLoc {
-   regionLoc region0;
-   regionLoc region1;
-   regionLoc region2;
-} vertexLoc;
 
 typedef struct _Region {
     regionLoc location;
@@ -97,6 +73,27 @@ typedef struct _Map {
    Edge edges[NUM_EDGES];
    Vertex vertices[NUM_VERTICES];
 } Map;
+
+typedef struct _StudentCount {
+   int thd;
+   int bps;
+   int bqn;
+   int mj;
+   int mtv;
+   int mmoney;
+   //COMPLETED
+} StudentCount;
+
+typedef struct _University {
+   int playerId;
+   StudentCount studentCount;
+   int publicationCount;
+   int patentCount;
+   int ownedCampusCount;
+   Vertex ownedCampuses[MAX_OWNED_CAMPUSES];
+   int ownedArcCount;
+   Edge ownedArcs[MAX_OWNED_ARCS];
+} University;
 
 typedef struct _game {
    int currentTurn;
@@ -141,7 +138,6 @@ void initGame(Game g, int discipline[], int dice[]) {
 }
 
 void initMap (Map* map, int discipline[], int dice[]) {
-   //MEDIUM-HARD
    initRegions (map->regions, discipline, dice);
    initEdges (map->edges);
    initVertices (map->vertices);
@@ -196,9 +192,9 @@ void initEdges (Edge* e) {
          while (x < end_x) {
             loc.x = x;
             edgeType = findEdgeType(x,y);
-            e[edgeNum].location.region0 = loc;
+            e[edgeNum].location.point0 = loc;
             loc.x = x+1;
-            e[edgeNum].location.region1 = loc;
+            e[edgeNum].location.point1 = loc;
             e[edgeNum].edgeType = edgeType;
             e[edgeNum].isOwned = VACANT_ARC;
             e[edgeNum].uniID = NO_ONE;
@@ -214,9 +210,9 @@ void initEdges (Edge* e) {
             loc.x = x;
             loc.y = y+1;
             edgeType = SIDE_VERTICAL;
-            e[edgeNum].location.region0 = loc;
+            e[edgeNum].location.point0 = loc;
             loc.y = y-1;
-            e[edgeNum].location.region1 = loc;
+            e[edgeNum].location.point1 = loc;
             e[edgeNum].edgeType = edgeType;
             e[edgeNum].isOwned = VACANT_ARC;
             e[edgeNum].uniID = NO_ONE;
@@ -253,8 +249,6 @@ int findEdgeType (int x, int y) {
 
 void initVertices (Vertex* v) {
    int vertexNum = 0;
-   int isOwned;
-   int uniID;
    int x = -3;
    int y = 5;
    int end_x = x*(-1);
@@ -295,42 +289,36 @@ void addRegions(regionLoc* regions, int x, int y) {
       loc.y = y+1;
       regions[regionCount] = loc;
       regionCount++;
-      //printf("1");
    }
    if (isRegion(x, y+1) && checkPoint (x, y+1) && regionCount<3) {
       loc.x = x;
       loc.y = y+1;
       regions[regionCount] = loc;
       regionCount++;
-      //printf("2");
    }
    if (isRegion(x+1,y+1) && checkPoint (x+1, y+1) && regionCount<3) {
       loc.x = x+1;
       loc.y = y+1;
       regions[regionCount] = loc;
       regionCount++;
-      //printf("3");
    }
    if (isRegion(x-1,y-1) && checkPoint (x-1, y-1) && regionCount<3) {
       loc.x = x-1;
       loc.y = y-1;
       regions[regionCount] = loc;
       regionCount++;
-      //printf("4");
    }
    if (isRegion(x,y-1) && checkPoint (x, y-1) && regionCount<3) {
       loc.x = x;
       loc.y = y-1;
       regions[regionCount] = loc;
       regionCount++;
-      //printf("5");
    }
    if (isRegion(x+1,y-1) && checkPoint (x+1, y-1) && regionCount<3) {
       loc.x = x+1;
       loc.y = y-1;
       regions[regionCount] = loc;
       regionCount++;
-      //printf("6");
    }
 }
 
@@ -365,9 +353,9 @@ void initUniversity(University* university, int player) {
    university->publicationCount = START_NUM_PUBLICATIONS;
    university->patentCount = START_NUM_PATENTS;
    university->ownedCampusCount = 2;
-   """Add something to initialise owned campuses""";
+   //university->ownedCampuses = {0};
    university->ownedArcCount = 0;
-   """Add something to initialise owned ARCs""";
+   //university->ownedArcs = {0};
 }
 
 // advance the game to the next turn,
@@ -507,7 +495,7 @@ int getARCs (Game g, int player) {
 
 // return the number of GO8 campuses the specified player currently has
 int getGO8s (Game g, int player) {
-//EASY-MEDIUM
+//MEDIUM
    """You will need to make another function that goes through the\
    university's campuses and check to see if they are GO8 or normal""";
    return 0;
@@ -515,7 +503,7 @@ int getGO8s (Game g, int player) {
 
 // return the number of normal Campuses the specified player currently has
 int getCampuses (Game g, int player) {
-//EASY-MEDIUM
+//MEDIUM
    """You will need to make another function that goes through the\
    university's campuses and check to see if they are GO8 or normal""";
    return 0;
@@ -570,7 +558,9 @@ int getStudents (Game g, int player, int discipline) {
 // on what retraining centers, if any, they have a campus at.
 int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 //MEDIUM
-   """Can start but will need MAP to finish""";
+   """If a university has a campus on a retraining centre, then\
+      it only takes 2 students of type of retraining centre, to train\
+      into any other type of student.""";
    return 0;
 }
 
