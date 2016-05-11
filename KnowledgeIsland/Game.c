@@ -75,7 +75,7 @@ typedef struct _Region {
     regionLoc location;
     int regionID;
     int disciplineValue;
-    int diceValue; // Number on the hexagon
+    int diceValue;
 } Region;
 
 typedef struct _Edge {
@@ -86,14 +86,13 @@ typedef struct _Edge {
 } Edge;
 
 typedef struct _Vertex {
-   vertexLoc location;
+   regionLoc location;
+   regionLoc regions[3];
    int isOwned;
    int uniID;
 } Vertex;
 
 typedef struct _Map {
-   //MEDIUM-HARD
-   //Include co-ords, regionID, discplines, dice
    Region regions[NUM_REGIONS];
    Edge edges[NUM_EDGES];
    Vertex vertices[NUM_VERTICES];
@@ -116,6 +115,8 @@ void initRegions (Region* r, int discipline[], int dice[]);
 void initEdges (Edge* e);
 int findEdgeType (int x, int y);
 void initVertices (Vertex* v);
+void addRegions(Vertex* v, int vertexNum, int x, int y);
+int isRegion (int x, int y);
 int checkPoint (int x, int y);
 void initGame(Game game, int discipline[], int dice[]);
 
@@ -231,7 +232,6 @@ void initEdges (Edge* e) {
       }
       end_x = x*(-1);
       y--;
-      printf("NEW ROW\n");
    }
 }
 
@@ -247,7 +247,7 @@ int findEdgeType (int x, int y) {
 }
 
 void initVertices (Vertex* v) {
-   int edgeNum = 0;
+   int vertexNum = 0;
    int isOwned;
    int uniID;
    int x = -3;
@@ -256,20 +256,19 @@ void initVertices (Vertex* v) {
    regionLoc loc;
    while (y >= -5) {
       loc.y = y;
-      while (x < end_x) {
+      while (x <= end_x) {
          loc.x = x;
-         v[vertexNum].location.region0 = loc;
-         loc.x = x+1;
-         v[vertexNum].location.region1 = loc;
-         v[vertexNum].location.region2 = loc;
-         v[edgeNum].isOwned = VACANT_VERTEX;
-         v[edgeNum].uniID = NO_ONE;
+         v[vertexNum].location = loc;
+         v[vertexNum].isOwned = VACANT_VERTEX;
+         v[vertexNum].uniID = NO_ONE;
+         addRegions(v, vertexNum, x, y);
          x++;
-   /*    printf("Edge (%d,%d), (%d,%d), type: %d\n",
-   e[edgeNum].location.region0.x, e[edgeNum].location.region0.y,
-   e[edgeNum].location.region1.x, e[edgeNum].location.region1.y,
-   e[edgeNum].edgeType);
-   */
+         vertexNum++;
+    printf("Vertex: (%d,%d), R1:(%d,%d), R2:(%d, %d), R3: (%d, %d)\n",
+      v[vertexNum].location.x, v[vertexNum].location.y,
+      v[vertexNum].regions[0].x, v[vertexNum].regions[0].y,
+      v[vertexNum].regions[1].x, v[vertexNum].regions[1].y,
+      v[vertexNum].regions[2].x, v[vertexNum].regions[2].y);
       }
       if (y==5||y==-1) {
          x = -4;
@@ -281,6 +280,56 @@ void initVertices (Vertex* v) {
       end_x = x*(-1);
       y = y-2;
    }
+}
+
+void addRegions(Vertex* v, int vertexNum, int x, int y) {
+   int regionCount = 0;
+   regionLoc loc;
+   if (isRegion(x-1, y+1) && checkPoint (x-1, y+1)) {
+      printf("region1");
+      loc.x = x-1;
+      loc.y = y+1;
+      v[vertexNum].regions[regionCount] = loc;
+      regionCount++;
+   } else if (isRegion(x, y+1) && checkPoint (x, y+1)) {
+      printf("region2");
+      loc.x = x;
+      loc.y = y+1;
+      v[vertexNum].regions[regionCount] = loc;
+      regionCount++;
+   } else if (isRegion(x+1,y+1) && checkPoint (x+1, y+1)) {
+      printf("region3");
+      loc.x = x+1;
+      loc.y = y+1;
+      v[vertexNum].regions[regionCount] = loc;
+      regionCount++;
+   } else if (isRegion(x-1,y-1) && checkPoint (x-1, y-1)) {
+      printf("region4");
+      loc.x = x-1;
+      loc.y = y-1;
+      v[vertexNum].regions[regionCount] = loc;
+      regionCount++;
+   } else if (isRegion(x,y-1) && checkPoint (x, y-1)) {
+      printf("region5");
+      loc.x = x;
+      loc.y = y-1;
+      v[vertexNum].regions[regionCount] = loc;
+      regionCount++;
+   } else if (isRegion(x+1,y-1) && checkPoint (x+1, y-1)) {
+      printf("region6");
+      loc.x = x+1;
+      loc.y = y-1;
+      v[vertexNum].regions[regionCount] = loc;
+      regionCount++;
+   }
+}
+
+int isRegion (int x, int y) {
+   int result = FALSE;
+   if (((x%2==1||x%2==-1) && y%4==2) || (x%2==0 && y%4==0)) {
+      result = TRUE;
+   }
+   return result;
 }
 
 int checkPoint (int x, int y) {
