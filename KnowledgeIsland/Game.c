@@ -64,6 +64,7 @@ typedef struct _Edge {
 typedef struct _Vertex {
    regionLoc location;
    regionLoc regions[3];
+   int retrainingCentre;
    int isOwned;
    int uniID;
 } Vertex;
@@ -81,7 +82,6 @@ typedef struct _StudentCount {
    int mj;
    int mtv;
    int mmoney;
-   //COMPLETED
 } StudentCount;
 
 typedef struct _University {
@@ -258,15 +258,16 @@ void initVertices (Vertex* v) {
       while (x <= end_x) {
          loc.x = x;
          v[vertexNum].location = loc;
+         v[vertexNum].retrainingCentre = NONE;
          v[vertexNum].isOwned = VACANT_VERTEX;
          v[vertexNum].uniID = NO_ONE;
          addRegions(v[vertexNum].regions, x, y);
          x++;
-         /*printf("Vertex: (%d,%d), R1:(%d,%d), R2:(%d, %d), R3: (%d, %d)\n",
+         printf("Vertex: (%d,%d), R1:(%d,%d), R2:(%d, %d), R3: (%d, %d)\n",
          v[vertexNum].location.x, v[vertexNum].location.y,
          v[vertexNum].regions[0].x, v[vertexNum].regions[0].y,
          v[vertexNum].regions[1].x, v[vertexNum].regions[1].y,
-         v[vertexNum].regions[2].x, v[vertexNum].regions[2].y); */
+         v[vertexNum].regions[2].x, v[vertexNum].regions[2].y);
          vertexNum++;
       }
       if (y==5||y==-1) {
@@ -317,6 +318,18 @@ void addRegions(regionLoc* regions, int x, int y) {
    if (isRegion(x+1,y-1) && checkPoint (x+1, y-1) && regionCount<3) {
       loc.x = x+1;
       loc.y = y-1;
+      regions[regionCount] = loc;
+      regionCount++;
+   }
+   if (regionCount == 1) {
+      loc.x = 10;
+      loc.y = 10;
+      regions[regionCount] = loc;
+      regionCount++;
+   }
+   if (regionCount == 2) {
+      loc.x = 10;
+      loc.y = 10;
       regions[regionCount] = loc;
       regionCount++;
    }
@@ -472,6 +485,10 @@ int getARC(Game g, path pathToEdge) {
    return 0;
 }
 
+int checkPath (Game g, path p) {
+
+}
+
 // which university currently has the prestige award for the most ARCs?
 // this is NO_ONE until the first arc is purchased after the game
 // has started.
@@ -528,6 +545,9 @@ int getKPIpoints (Game g, int player){
    #define KPI_PER_ARC 2         #define KPI_PER_PATENT 10
    #define KPI_PER_CAMPUS 10     #define KPI_PER_GO8 20
    #define KPI_FOR_MOST_PUBS 10  #define KPI_FOR_MOST_ARCS 10 */
+   int KPICount = 0;
+   KPICount = KPICount + 2 * getARCs(g, player);
+
    return 0;
 }
 
