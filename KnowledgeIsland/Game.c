@@ -10,7 +10,10 @@
                 STUDENT_MJ, STUDENT_BQN, STUDENT_THD, STUDENT_MJ, \
                 STUDENT_MMONEY, STUDENT_MTV, STUDENT_BQN, STUDENT_BPS}
 #define DEFAULT_DICE {9,10,8,12,6,5,3,11,3,11,4,6,4,7,9,2,8,10,5}
-
+#define DEFAULT_TRAININGCENTRES {{-1,5,CENTRE_MMONEY},(0,5,CENTRE_MMONEY),\
+                {-4,3,CENTRE_MTV}, {-3,3,CENTRE_MTV}, {4,3,CENTRE_BQN},\
+                {4,1,CENTRE_BQN}, {4,-1,CENTRE_MJ}, {4,-3,CENTRE_MJ},\
+                {-1,-5,CENTRE_BPS}, {0,-5,CENTRE_BPS}}
 //Boundaries
 #define NUM_VERTICES 54
 #define NUM_EDGES 72
@@ -48,42 +51,37 @@
 #define SIDE_FORWARDSLASH 1 //"/"
 #define SIDE_BACKSLASH 2    //"\"
 
-typedef struct _regionLoc {
+typedef struct _Point {
+   //a point struct that can store (x,y) co-ordinates
    int x;
    int y;
-} regionLoc;
-
-typedef struct _edgeLoc {
-   regionLoc point0;
-   regionLoc point1;
-} edgeLoc;
+} Point;
 
 typedef struct _Region {
-    regionLoc location;
-    int regionID;
-    int disciplineValue;
-    int diceValue;
+    Point location; //(x,y) coord of the centre of the region
+    int regionID; //which region it is (indexed form 0-19)
+    int disciplineValue; //what students it produces
+    int diceValue; //what dice value is required to produce students
 } Region;
 
 typedef struct _Edge {
-   edgeLoc location;
-   int edgeType;
-   int isOwned;
-   int uniID;
+   Point point0; //the first (x,y) coords of the point the edge connects from
+   Point point1; //the second (x,y) coords of the point the edge connects to
+   int edgeType; //whether it is forwardslash/backslash/vertical
+   int isOwned; //whether someone owns an ARC on it or not
 } Edge;
 
 typedef struct _Vertex {
-   regionLoc location;
-   regionLoc regions[3];
-   int retrainingCentre;
-   int isOwned;
-   int uniID;
+   Point location; //(x,y) coord of the vertex
+   Point regions[3]; //which regions (up to three) surround it
+   int retrainingCentre; //whether it has a retraining centre on it
+   int isOwned; //whether someone owns a campus on it or not
 } Vertex;
 
 typedef struct _Map {
-   Region regions[NUM_REGIONS];
-   Edge edges[NUM_EDGES];
-   Vertex vertices[NUM_VERTICES];
+   Region regions[NUM_REGIONS]; //an array of Regions, NUM_REGIONS long
+   Edge edges[NUM_EDGES]; //an array of Edges, NUM_EDGES long
+   Vertex vertices[NUM_VERTICES]; //an array of Vertices, NUM_VERTICES long
 } Map;
 
 typedef struct _StudentCount {
@@ -97,19 +95,19 @@ typedef struct _StudentCount {
 
 typedef struct _University {
    int playerId;
-   StudentCount studentCount;
+   StudentCount studentCount; //The number of students they have per degree
    int publicationCount;
    int patentCount;
    int ownedCampusCount;
-   Vertex ownedCampuses[MAX_OWNED_CAMPUSES];
+   Vertex ownedCampuses[MAX_OWNED_CAMPUSES]; //The vertices of campuses they own
    int ownedArcCount;
-   Edge ownedArcs[MAX_OWNED_ARCS];
+   Edge ownedArcs[MAX_OWNED_ARCS]; //The edges of ARCs they own
 } University;
 
 typedef struct _game {
    int currentTurn;
    Map map;
-   University universities[NUM_UNIS];
+   University universities[NUM_UNIS]; //an array of Universities, NUM_UNIS long
    int totalGo8CampusCount;
    int mostPublications;
    int mostPublicationsPlayer;
@@ -123,61 +121,67 @@ void initRegions (Region* r, int discipline[], int dice[]);
 void initEdges (Edge* e);
 int findEdgeType (int x, int y);
 void initVertices (Vertex* v);
-void addRegions(regionLoc* regions, int x, int y);
+void addRegions(Point* regions, int x, int y);
 int isRegion (int x, int y);
 int checkPoint (int x, int y);
 void initGame(Game game, int discipline[], int dice[]);
 
 Game newGame(int discipline[], int dice[]) {
-    Game g = malloc(sizeof(Game));
+    Game g = malloc(sizeof(Game)); //allocate memory to the game
     assert(g != NULL);
-    initGame (g, discipline, dice);
+    initGame (g, discipline, dice); //generate initial state of the game
     return g;
 }
 
 void initGame(Game g, int discipline[], int dice[]) {
+   //initialise the game.
    g->currentTurn = -1;
    g->totalGo8CampusCount = 0;
    g->mostPublications = 0;
    g->mostPublicationsPlayer = NO_ONE;
    g->mostArcs = 0;
    g->mostArcsPlayer = NO_ONE;
-   initMap(&g->map, discipline, dice);
-   initUniversity(&g->universities[0], UNI_A);
-   initUniversity(&g->universities[1], UNI_B);
-   initUniversity(&g->universities[2], UNI_C);
+   initMap(&g->map, discipline, dice); //initialise the map
+   initUniversity(&g->universities[0], UNI_A); //initialise UNI_A
+   initUniversity(&g->universities[1], UNI_B); //initialise UNI_B
+   initUniversity(&g->universities[2], UNI_C); //initialise UNI_C
 }
 
 void initMap (Map* map, int discipline[], int dice[]) {
-   initRegions (map->regions, discipline, dice);
-   initEdges (map->edges);
-   initVertices (map->vertices);
+   //Generate the map
+   initRegions (map->regions, discipline, dice); //Generate the regions
+   initEdges (map->edges); //Generate the edges
+   initVertices (map->vertices); //Generate the vertices
 }
 
 void initRegions (Region* r, int discipline[], int dice[]) {
+   //Generates all 19 regions in the map
    int regionNum = 0;
    int realignNum = 0;
    int realignRegionNum[NUM_REGIONS] = {7,12,16,3,8,13,17,0,4,9,14,18,
-                                        1,5,10,15,2,6,11};
+   /* realign to our interpretation of the map*/    1,5,10,15,2,6,11};
    int x = -2;
    int y = 4;
    int end_x = x*(-1);
-   regionLoc loc;
+   Point location; //a point struct we can change
    while (y >= -4) {
-      loc.y = y;
+      //Loops through each region row in the map
+      location.y = y;
       while (x <= end_x) {
-         loc.x = x;
+         //Loops through each region in the row
+         location.x = x; //set location.x to the current value of x
          realignNum = realignRegionNum[regionNum];
-         r[realignNum].location = loc;
-         r[realignNum].regionID = realignNum;
-         r[realignNum].disciplineValue = discipline[realignNum];
-         r[realignNum].diceValue = dice[realignNum];
+         r[realignNum].location = location; //gives the current value of location.x&location.y to the region
+         r[realignNum].regionID = realignNum; //gives the regionID from 0-18 based on map
+         r[realignNum].disciplineValue = discipline[realignNum]; //gives the discipline stored in region
+         r[realignNum].diceValue = dice[realignNum]; //gives the dice value needed to activate region
 /*         printf("Region %d, (%d,%d), deg: %d, dice: %d\n", r[realignNum].regionID,
       r[realignNum].location.x, r[realignNum].location.y, r[realignNum].disciplineValue,
       r[realignNum].diceValue);*/
          x = x+2;
          regionNum++;
       }
+      //Set x for the next row
       if (y==4||y==0) {
          x = -3;
       } else if (y==2) {
@@ -186,55 +190,60 @@ void initRegions (Region* r, int discipline[], int dice[]) {
          x = -2;
       }
       end_x = x*(-1);
-      y = y-2;
+      y = y-2; //go to the next region row
    }
 }
 
 void initEdges (Edge* e) {
+   //Generates all the edges in the map
    int edgeNum = 0;
-   int edgeType;
+   int edgeType; //Vertical, backslash or forwardslash
    int x = -3;
    int y = 5;
    int end_x = x*(-1);
-   regionLoc loc;
+   Point location; //a point struct we can change
    while (y >= -5) {
-      loc.y = y;
-      if (y%2== 1||y%2==-1) {
+      //Loops through each row in the map
+      location.y = y;
+      if (y%2== 1||y%2==-1) {   //If it is a horizontal edge
          while (x < end_x) {
-            loc.x = x;
-            edgeType = findEdgeType(x,y);
-            e[edgeNum].location.point0 = loc;
-            loc.x = x+1;
-            e[edgeNum].location.point1 = loc;
-            e[edgeNum].edgeType = edgeType;
-            e[edgeNum].isOwned = VACANT_ARC;
-            e[edgeNum].uniID = NO_ONE;
-            x++;
-/*            printf("Edge (%d,%d), (%d,%d), type: %d\n",
-   e[edgeNum].location.region0.x, e[edgeNum].location.region0.y,
-   e[edgeNum].location.region1.x, e[edgeNum].location.region1.y,
-   e[edgeNum].edgeType);
-*/
+            //Loops through each horizontal edge in the row
+            location.x = x;
+            edgeType = findEdgeType(x,y); //returns whether it is a backslash or forward slash edge
+            e[edgeNum].point0 = location; //gives the current value of location.x&location.y to point0
+            location.x = x+1; //the second point of the edge is 1 to the right of point0
+            e[edgeNum].point1 = location; //point1 is second point of the edge
+            e[edgeNum].edgeType = edgeType; //black/fowardslash/vertical
+            e[edgeNum].isOwned = VACANT_ARC; //who owns the edge
+            x++; //go to the next point
+/*           printf("Edge (%d,%d), (%d,%d), type: %d\n",
+   e[edgeNum].point0.x, e[edgeNum].point0.y,
+   e[edgeNum].point1.x, e[edgeNum].point1.y,
+   e[edgeNum].edgeType); */
+
          }
       } else {
          while (x <= end_x) {
-            loc.x = x;
-            loc.y = y+1;
+            //Loops through each vertical edge in the row
+            location.x = x;
+            location.y = y+1; //Since you look at the middle of the edge
+            //(vertical edges are 2 units high) the y values +-1 are the
+            //two points which the edge connects.
             edgeType = SIDE_VERTICAL;
-            e[edgeNum].location.point0 = loc;
-            loc.y = y-1;
-            e[edgeNum].location.point1 = loc;
-            e[edgeNum].edgeType = edgeType;
+            e[edgeNum].point0 = location; //gives the current value of location.x&location.y to point0
+            location.y = y-1; //the second point is below the middle of the vertical edge
+            e[edgeNum].point1 = location; //point1 is second point of the edge
+            e[edgeNum].edgeType = edgeType; //Sets the edgetype, (set as SIDE_VERTICAL above)
             e[edgeNum].isOwned = VACANT_ARC;
-            e[edgeNum].uniID = NO_ONE;
-            x = x+2;
-/*            printf("Edge (%d,%d), (%d,%d), type: %d\n",
-   e[edgeNum].location.region0.x, e[edgeNum].location.region0.y,
-   e[edgeNum].location.region1.x, e[edgeNum].location.region1.y,
-   e[edgeNum].edgeType);
-*/
+            x = x+2; //go to next Vertical edge
+/*           printf("Edge (%d,%d), (%d,%d), type: %d\n",
+   e[edgeNum].point0.x, e[edgeNum].point0.y,
+   e[edgeNum].point1.x, e[edgeNum].point1.y,
+   e[edgeNum].edgeType); */
+
          }
       }
+      //Set x for the next row
       if (y==5||y==-3||y==-4) {
          x = -3;
       } else if (y==4||y==3||y==-1||y==-2) {
@@ -243,11 +252,12 @@ void initEdges (Edge* e) {
          x = -5;
       }
       end_x = x*(-1);
-      y--;
+      y--; //go to the next row
    }
 }
 
 int findEdgeType (int x, int y) {
+   //Finds out whether the edge is a forwardslash one or a backslash one
    int result;
    y--;
    if (((x%2==1||x%2==-1) && y%4==0) || (x%2==0 && (y%4==2||y%4==-2))) {
@@ -259,28 +269,31 @@ int findEdgeType (int x, int y) {
 }
 
 void initVertices (Vertex* v) {
+   //Generates all the vertices of the map
    int vertexNum = 0;
    int x = -3;
    int y = 5;
    int end_x = x*(-1);
-   regionLoc loc;
+   Point location; //a point struct we can change
    while (y >= -5) {
-      loc.y = y;
+      //Loops through each row in the map
+      location.y = y;
       while (x <= end_x) {
-         loc.x = x;
-         v[vertexNum].location = loc;
-         v[vertexNum].retrainingCentre = NO_CENTRE;
-         v[vertexNum].isOwned = VACANT_VERTEX;
-         v[vertexNum].uniID = NO_ONE;
-         addRegions(v[vertexNum].regions, x, y);
-         x++;
-         printf("Vertex: (%d,%d), R1:(%d,%d), R2:(%d, %d), R3: (%d, %d)\n",
+         //Loops thorugh each point in the row
+         location.x = x;
+         v[vertexNum].location = location; //gives the current value of location.x&location.y to the vertex
+         v[vertexNum].retrainingCentre = NO_CENTRE; //whether it has a retrainingCentre or not
+         v[vertexNum].isOwned = VACANT_VERTEX; //whether a uni has built a campus on it or not
+         addRegions(v[vertexNum].regions, x, y); //Adds what regions surround it
+         x++; //go to next point
+/*         printf("Vertex: (%d,%d), R1:(%d,%d), R2:(%d, %d), R3: (%d, %d)\n",
          v[vertexNum].location.x, v[vertexNum].location.y,
          v[vertexNum].regions[0].x, v[vertexNum].regions[0].y,
          v[vertexNum].regions[1].x, v[vertexNum].regions[1].y,
-         v[vertexNum].regions[2].x, v[vertexNum].regions[2].y);
+         v[vertexNum].regions[2].x, v[vertexNum].regions[2].y); */
          vertexNum++;
       }
+      //Sets the x for the next row
       if (y==5||y==-1) {
          x = -4;
       } else if (y==3||y==1) {
@@ -289,64 +302,73 @@ void initVertices (Vertex* v) {
          x = -3;
       }
       end_x = x*(-1);
-      y = y-2;
+      y = y-2; //go to next row
    }
 }
 
-void addRegions(regionLoc* regions, int x, int y) {
+void addRegions(Point* regions, int x, int y) {
+   //Gives the vertice what regions are surrounding it by checking whether
+   //they are a region point and whether or not it's on the map.
    int regionCount = 0;
-   regionLoc loc;
+   Point location;
+   //Check the points that are top-left, above, top-right, bottom-left,
+   //below, and bottom-right.
    if (isRegion(x-1, y+1) && checkPoint (x-1, y+1) && regionCount<3) {
-      loc.x = x-1;
-      loc.y = y+1;
-      regions[regionCount] = loc;
+      location.x = x-1;
+      location.y = y+1;
+      regions[regionCount] = location;
       regionCount++;
    }
    if (isRegion(x, y+1) && checkPoint (x, y+1) && regionCount<3) {
-      loc.x = x;
-      loc.y = y+1;
-      regions[regionCount] = loc;
+      location.x = x;
+      location.y = y+1;
+      regions[regionCount] = location;
       regionCount++;
    }
    if (isRegion(x+1,y+1) && checkPoint (x+1, y+1) && regionCount<3) {
-      loc.x = x+1;
-      loc.y = y+1;
-      regions[regionCount] = loc;
+      location.x = x+1;
+      location.y = y+1;
+      regions[regionCount] = location;
       regionCount++;
    }
    if (isRegion(x-1,y-1) && checkPoint (x-1, y-1) && regionCount<3) {
-      loc.x = x-1;
-      loc.y = y-1;
-      regions[regionCount] = loc;
+      location.x = x-1;
+      location.y = y-1;
+      regions[regionCount] = location;
       regionCount++;
    }
    if (isRegion(x,y-1) && checkPoint (x, y-1) && regionCount<3) {
-      loc.x = x;
-      loc.y = y-1;
-      regions[regionCount] = loc;
+      location.x = x;
+      location.y = y-1;
+      regions[regionCount] = location;
       regionCount++;
    }
    if (isRegion(x+1,y-1) && checkPoint (x+1, y-1) && regionCount<3) {
-      loc.x = x+1;
-      loc.y = y-1;
-      regions[regionCount] = loc;
+      location.x = x+1;
+      location.y = y-1;
+      regions[regionCount] = location;
       regionCount++;
    }
    if (regionCount == 1) {
-      loc.x = 10;
-      loc.y = 10;
-      regions[regionCount] = loc;
+      //If the point only has one region surrounding it, set the second
+      //region as a dummy region
+      location.x = 10;
+      location.y = 10;
+      regions[regionCount] = location;
       regionCount++;
    }
    if (regionCount == 2) {
-      loc.x = 10;
-      loc.y = 10;
-      regions[regionCount] = loc;
+      //If the point only has two regions surrounding it, set the third
+      //region as a dummy region
+      location.x = 10;
+      location.y = 10;
+      regions[regionCount] = location;
       regionCount++;
    }
 }
 
 int isRegion (int x, int y) {
+   //Checks to see if the point is a region coord
    int result = FALSE;
    if (((x%2==1||x%2==-1) && (y%4==2||y%4==-2)) || (x%2==0 && y%4==0)) {
       result = TRUE;
@@ -355,6 +377,7 @@ int isRegion (int x, int y) {
 }
 
 int checkPoint (int x, int y) {
+   //Checks to see if the point is on the map or on the sea
    int point = FALSE;
    if (abs(x) <=3 && abs(y) <=5) {
       point = TRUE;
@@ -367,7 +390,9 @@ int checkPoint (int x, int y) {
 }
 
 void initUniversity(University* university, int player) {
-   university->playerId = player;
+   //Initialise the universities
+   university->playerId = player; //uniID, which is 1,2or3
+   //Give the universities their starting students
    university->studentCount.thd = START_NUM_THD;
    university->studentCount.bps = START_NUM_BPS;
    university->studentCount.bqn = START_NUM_BQN;
