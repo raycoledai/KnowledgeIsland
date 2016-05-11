@@ -115,7 +115,7 @@ void initRegions (Region* r, int discipline[], int dice[]);
 void initEdges (Edge* e);
 int findEdgeType (int x, int y);
 void initVertices (Vertex* v);
-void addRegions(Vertex* v, int vertexNum, int x, int y);
+void addRegions(regionLoc* regions, int x, int y);
 int isRegion (int x, int y);
 int checkPoint (int x, int y);
 void initGame(Game game, int discipline[], int dice[]);
@@ -129,6 +129,11 @@ Game newGame(int discipline[], int dice[]) {
 
 void initGame(Game g, int discipline[], int dice[]) {
    g->currentTurn = -1;
+   g->totalGo8CampusCount = 0;
+   g->mostPublications = 0;
+   g->mostPublicationsPlayer = NO_ONE;
+   g->mostArcs = 0;
+   g->mostArcsPlayer = NO_ONE;
    initMap(&g->map, discipline, dice);
    initUniversity(&g->universities[0], UNI_A);
    initUniversity(&g->universities[1], UNI_B);
@@ -261,14 +266,14 @@ void initVertices (Vertex* v) {
          v[vertexNum].location = loc;
          v[vertexNum].isOwned = VACANT_VERTEX;
          v[vertexNum].uniID = NO_ONE;
-         addRegions(v, vertexNum, x, y);
+         addRegions(v[vertexNum].regions, x, y);
          x++;
+         /*printf("Vertex: (%d,%d), R1:(%d,%d), R2:(%d, %d), R3: (%d, %d)\n",
+         v[vertexNum].location.x, v[vertexNum].location.y,
+         v[vertexNum].regions[0].x, v[vertexNum].regions[0].y,
+         v[vertexNum].regions[1].x, v[vertexNum].regions[1].y,
+         v[vertexNum].regions[2].x, v[vertexNum].regions[2].y); */
          vertexNum++;
-    printf("Vertex: (%d,%d), R1:(%d,%d), R2:(%d, %d), R3: (%d, %d)\n",
-      v[vertexNum].location.x, v[vertexNum].location.y,
-      v[vertexNum].regions[0].x, v[vertexNum].regions[0].y,
-      v[vertexNum].regions[1].x, v[vertexNum].regions[1].y,
-      v[vertexNum].regions[2].x, v[vertexNum].regions[2].y);
       }
       if (y==5||y==-1) {
          x = -4;
@@ -282,51 +287,56 @@ void initVertices (Vertex* v) {
    }
 }
 
-void addRegions(Vertex* v, int vertexNum, int x, int y) {
+void addRegions(regionLoc* regions, int x, int y) {
    int regionCount = 0;
    regionLoc loc;
-   if (isRegion(x-1, y+1) && checkPoint (x-1, y+1)) {
-      printf("region1");
+   if (isRegion(x-1, y+1) && checkPoint (x-1, y+1) && regionCount<3) {
       loc.x = x-1;
       loc.y = y+1;
-      v[vertexNum].regions[regionCount] = loc;
+      regions[regionCount] = loc;
       regionCount++;
-   } else if (isRegion(x, y+1) && checkPoint (x, y+1)) {
-      printf("region2");
+      //printf("1");
+   }
+   if (isRegion(x, y+1) && checkPoint (x, y+1) && regionCount<3) {
       loc.x = x;
       loc.y = y+1;
-      v[vertexNum].regions[regionCount] = loc;
+      regions[regionCount] = loc;
       regionCount++;
-   } else if (isRegion(x+1,y+1) && checkPoint (x+1, y+1)) {
-      printf("region3");
+      //printf("2");
+   }
+   if (isRegion(x+1,y+1) && checkPoint (x+1, y+1) && regionCount<3) {
       loc.x = x+1;
       loc.y = y+1;
-      v[vertexNum].regions[regionCount] = loc;
+      regions[regionCount] = loc;
       regionCount++;
-   } else if (isRegion(x-1,y-1) && checkPoint (x-1, y-1)) {
-      printf("region4");
+      //printf("3");
+   }
+   if (isRegion(x-1,y-1) && checkPoint (x-1, y-1) && regionCount<3) {
       loc.x = x-1;
       loc.y = y-1;
-      v[vertexNum].regions[regionCount] = loc;
+      regions[regionCount] = loc;
       regionCount++;
-   } else if (isRegion(x,y-1) && checkPoint (x, y-1)) {
-      printf("region5");
+      //printf("4");
+   }
+   if (isRegion(x,y-1) && checkPoint (x, y-1) && regionCount<3) {
       loc.x = x;
       loc.y = y-1;
-      v[vertexNum].regions[regionCount] = loc;
+      regions[regionCount] = loc;
       regionCount++;
-   } else if (isRegion(x+1,y-1) && checkPoint (x+1, y-1)) {
-      printf("region6");
+      //printf("5");
+   }
+   if (isRegion(x+1,y-1) && checkPoint (x+1, y-1) && regionCount<3) {
       loc.x = x+1;
       loc.y = y-1;
-      v[vertexNum].regions[regionCount] = loc;
+      regions[regionCount] = loc;
       regionCount++;
+      //printf("6");
    }
 }
 
 int isRegion (int x, int y) {
    int result = FALSE;
-   if (((x%2==1||x%2==-1) && y%4==2) || (x%2==0 && y%4==0)) {
+   if (((x%2==1||x%2==-1) && (y%4==2||y%4==-2)) || (x%2==0 && y%4==0)) {
       result = TRUE;
    }
    return result;
@@ -334,16 +344,14 @@ int isRegion (int x, int y) {
 
 int checkPoint (int x, int y) {
    int point = FALSE;
-   if (y%2 == 1) {
-      if (abs(x) <=3 && abs(y) <=5) {
-         point = TRUE;
-      } else if (abs(x) <= 4 && abs(y) <= 3) {
-         point = TRUE;
-      } else if (abs(x) <= 5 && abs(y) <= 1) {
-         point = TRUE;
-      }
-    }
-    return point;
+   if (abs(x) <=3 && abs(y) <=5) {
+      point = TRUE;
+   } else if (abs(x) <= 4 && abs(y) <= 3) {
+      point = TRUE;
+   } else if (abs(x) <= 5 && abs(y) <= 1) {
+      point = TRUE;
+   }
+   return point;
 }
 
 void initUniversity(University* university, int player) {
@@ -385,15 +393,15 @@ void throwDice (Game g, int diceScore) {
 // regionID is the index of the region in the newGame arrays (above)
 // see discipline codes above
 int getDiscipline (Game g, int regionID) {
-//MEDIUM
    return g->map.regions[regionID].disciplineValue;
+   //COMPLETED
 }
 
 // what dice value produces students in the specified region?
 // 2..12
 int getDiceValue (Game g, int regionID) {
-//MEDIUM
    return g->map.regions[regionID].diceValue;
+   //COMPLETED
 }
 
 // return the current turn number of the game -1,0,1, ..
@@ -405,7 +413,11 @@ int getTurnNumber (Game g) {
 // return the player id of the player whose turn it is
 // the result of this function is NO_ONE during Terra Nullis
 int getWhoseTurn (Game g) {
-   return (g->currentTurn + 3) % 3;
+   if (g->currentTurn == -1) {
+      return NO_ONE;
+   } else {
+      return (g->currentTurn + 3) % 3;
+   }
    //COMPLETED
 }
 
@@ -462,13 +474,13 @@ void makeAction (Game g, action a) {
 // VACANT_VERTEX)
 int getCampus(Game g, path pathToVertex) {
 //MEDIUM
-   """Make this after Map is done""";
+   """Make this after pathing is done""";
    return 0;
 }
 
 // the contents of the given edge (ie ARC code or vacent ARC)
 int getARC(Game g, path pathToEdge) {
-   """Make this after Map is done""";
+   """Make this after pathing is done""";
    return 0;
 }
 
@@ -476,7 +488,6 @@ int getARC(Game g, path pathToEdge) {
 // this is NO_ONE until the first arc is purchased after the game
 // has started.
 int getMostARCs (Game g) {
-//EASY-MEDIUM
    return g->mostArcsPlayer;
    //COMPLETED
 }
@@ -484,14 +495,12 @@ int getMostARCs (Game g) {
 // which university currently has the prestige award for the most pubs?
 // this is NO_ONE until the first publication is made.
 int getMostPublications (Game g) {
-//EASY-MEDIUM
    return g->mostPublicationsPlayer;
    //COMPLETED
 }
 
 // return the number of ARC grants the specified player currently has
 int getARCs (Game g, int player) {
-//EASY
    return g->universities[player].ownedArcCount;
    //COMPLETED
 }
@@ -514,14 +523,12 @@ int getCampuses (Game g, int player) {
 
 // return the number of IP Patents the specified player currently has
 int getIPs (Game g, int player) {
-//EASY
    return g->universities[player].patentCount;
    //COMPLETED
 }
 
 // return the number of Publications the specified player currently has
 int getPublications (Game g, int player) {
-//EASY
    return g->universities[player].publicationCount;
    //COMPLETED
 }
