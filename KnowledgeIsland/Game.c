@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
+#include <string.h>
 #include "Game.h"
 
 #define DEFAULT_DISCIPLINES {STUDENT_BQN, STUDENT_MMONEY, STUDENT_MJ, \
@@ -17,6 +18,7 @@
 //Boundaries
 #define NUM_VERTICES 54
 #define NUM_EDGES 72
+#define VERTICES_PER_REGION 6
 #define MAX_OWNED_CAMPUSES 27
 #define MAX_OWNED_ARCS 72
 
@@ -53,6 +55,10 @@
 #define SIDE_VERTICAL 0 //"|"
 #define SIDE_FORWARDSLASH 1 //"/"
 #define SIDE_BACKSLASH 2    //"\"
+
+//Path direction
+#define SOUTH 1
+#define NORTH -1
 
 typedef struct _Point {
    //a point struct that can store (x,y) co-ordinates
@@ -96,7 +102,7 @@ typedef struct _StudentCount {
    int mmoney;
 } StudentCount;
 
-typedef struct _University {
+typedef struct _university {
    int playerId;
    StudentCount studentCount; //The number of students they have per degree
    int publicationCount;
@@ -105,12 +111,12 @@ typedef struct _University {
    Vertex ownedCampuses[MAX_OWNED_CAMPUSES]; //The vertices of campuses they own
    int ownedArcCount;
    Edge ownedArcs[MAX_OWNED_ARCS]; //The edges of ARCs they own
-} University;
+} uni;
 
 typedef struct _game {
    int currentTurn;
    Map map;
-   University universities[NUM_UNIS]; //an array of Universities, NUM_UNIS long
+   uni unis[NUM_UNIS]; //an array of unis, NUM_UNIS long
    int totalGo8CampusCount;
    int mostPublications;
    int mostPublicationsPlayer;
@@ -118,7 +124,7 @@ typedef struct _game {
    int mostArcsPlayer;
 } game;
 
-void initUniversity(University* university, int player);
+void initUniversity(uni* u, int player);
 void initMap (Map* map, int discipline[], int dice[]);
 void initRegions (Region* r, int discipline[], int dice[]);
 void initEdges (Edge* e);
@@ -127,13 +133,18 @@ void initVertices (Vertex* v);
 void addRegions(Point* regions, int x, int y);
 int isRegion (int x, int y);
 int checkPoint (int x, int y);
+Point getVertexLocation(Point location, int vertexNum);
+Vertex travelPath(Map* m, path* p);
+int swapFacing (int facing)
+//int checkPath (Game g, path p);
 void initGame(Game game, int discipline[], int dice[]);
 
 Game newGame(int discipline[], int dice[]) {
-    Game g = malloc(sizeof(Game)); //allocate memory to the game
-    assert(g != NULL);
-    initGame (g, discipline, dice); //generate initial state of the game
-    return g;
+   //printf (sizeof(game)*3);
+   Game g = malloc(sizeof(game)*sizeof(game)); //allocate memory to the game
+   assert(g != NULL);
+   initGame (g, discipline, dice); //generate initial state of the game
+   return g;
 }
 
 void initGame(Game g, int discipline[], int dice[]) {
@@ -145,9 +156,9 @@ void initGame(Game g, int discipline[], int dice[]) {
    g->mostArcs = 0;
    g->mostArcsPlayer = NO_ONE;
    initMap(&g->map, discipline, dice); //initialise the map
-   initUniversity(&g->universities[0], UNI_A); //initialise UNI_A
-   initUniversity(&g->universities[1], UNI_B); //initialise UNI_B
-   initUniversity(&g->universities[2], UNI_C); //initialise UNI_C
+   initUniversity(&g->unis[0], UNI_A); //initialise UNI_A
+   initUniversity(&g->unis[1], UNI_B); //initialise UNI_B
+   initUniversity(&g->unis[2], UNI_C); //initialise UNI_C
 }
 
 void initMap (Map* map, int discipline[], int dice[]) {
@@ -392,20 +403,22 @@ int checkPoint (int x, int y) {
    return point;
 }
 
-void initUniversity(University* university, int player) {
-   //Initialise the universities
-   university->playerId = player; //uniID, which is 1,2 or 3
-   //Give the universities their starting students
-   university->studentCount.thd = START_NUM_THD;
-   university->studentCount.bps = START_NUM_BPS;
-   university->studentCount.bqn = START_NUM_BQN;
-   university->studentCount.mj = START_NUM_MJ;
-   university->studentCount.mtv = START_NUM_MTV;
-   university->studentCount.mmoney = START_NUM_MMONEY;
-   university->publicationCount = START_NUM_PUBLICATIONS;
-   university->patentCount = START_NUM_PATENTS;
-   university->ownedCampusCount = 2;
-   university->ownedArcCount = 0;
+void initUniversity(uni* u, int player) {
+   //Initialise the unis
+   u->playerId = player; //uniID, which is 1,2 or 3
+   //Give the unis their starting students
+   u->studentCount.thd = START_NUM_THD;
+   u->studentCount.bps = START_NUM_BPS;
+   u->studentCount.bqn = START_NUM_BQN;
+   u->studentCount.mj = START_NUM_MJ;
+   u->studentCount.mtv = START_NUM_MTV;
+   u->studentCount.mmoney = START_NUM_MMONEY;
+   u->publicationCount = START_NUM_PUBLICATIONS;
+   u->patentCount = START_NUM_PATENTS;
+   u->ownedCampusCount = 2;
+   //u->ownedCampuses = malloc(MAX_OWNED_CAMPUSES);
+   u->ownedArcCount = 0;
+   //u->ownedArcs = malloc(MAX_OWNED_ARCS);
 }
 
 // advance the game to the next turn,
@@ -414,15 +427,151 @@ void initUniversity(University* university, int player) {
 // moves to turn 0 as soon as the first dice is thrown.
 void throwDice (Game g, int diceScore) {
 //MEDIUM
-   """MISLEADING FUNCTION NAME-NOT ACTUALLY THROWING DICE""";
+/*   """MISLEADING FUNCTION NAME-NOT ACTUALLY THROWING DICE""";
    """Dice has already been thrown, which is given in diceScore,\
       Make stuff happen after the Dice is thrown:\
          - Go through the map and give students to unis which have\
            campuses on regions which give students corresponding to\
            diceScore.\
-         - Implement Roll 7 ThD Rule""";
+         - Implement Roll 7 ThD Rule""";*/
    g->currentTurn++; //Increases current turn by 1 FIRST
-   //ADD STUFF HERE
+   //int regionNum = 0;
+   int uniID;
+   /*while (regionNum < NUM_REGIONS) {
+      if (g->map.regions[regionNum].diceValue == diceScore) {
+         int discipline = g->map.regions[regionNum].disciplineValue;
+         int vertexNum = 0;
+         Point regionLocation = g->map.regions[regionNum].location;
+         Point location;
+         while (vertexNum < VERTICES_PER_REGION) {
+            location = getVertexLocation(location, vertexNum);
+            int vOwned = getCampus(&g, getPath(&g->map, location));
+            if (vOwned) {
+               uniID = (vOwned -1) %3;
+               int increaseAmount = 1;
+               if (vOwned > 3) {
+                  increaseAmount = 2;
+               }
+               if (discipline == STUDENT_THD) {
+                  g->unis[uniID].studentCount.thd += increaseAmount;
+               } else if (discipline == STUDENT_BPS) {
+                  g->unis[uniID].studentCount.bps += increaseAmount;
+               } else if (discipline == STUDENT_BQN) {
+                  g->unis[uniID].studentCount.bqn += increaseAmount;
+               } else if (discipline == STUDENT_MJ) {
+                  g->unis[uniID].studentCount.mj += increaseAmount;
+               } else if (discipline == STUDENT_MTV) {
+                  g->unis[uniID].studentCount.mtv += increaseAmount;
+               } else if (discipline == STUDENT_MMONEY) {
+                  g->unis[uniID].studentCount.mmoney += increaseAmount;
+               }
+            }
+            vertexNum++;
+         }
+      }
+      regionNum++;
+   }*/
+   if (diceScore == 7) {
+      uniID = 0;
+      while (uniID < NUM_UNIS) {
+         uni* u = &g->unis[uniID];
+         u->studentCount.thd += u->studentCount.mmoney;
+         u->studentCount.thd += u->studentCount.mtv;
+         u->studentCount.mmoney = 0;
+         u->studentCount.mtv = 0;
+         uniID++;
+      }
+   }
+}
+
+Point getVertexLocation(Point location, int vertexNum) {
+   if (vertexNum == 0) {
+      location.x --;
+      location.y ++;
+   } else if (vertexNum == 1) {
+      location.y ++;
+   } else if (vertexNum == 2) {
+      location.x ++;
+      location.y ++;
+   } else if (vertexNum == 3) {
+      location.x --;
+      location.y --;
+   } else if (vertexNum == 4) {
+      location.y --;
+   } else if (vertexNum == 5) {
+      location.x ++;
+      location.y --;
+   }
+   return location;
+}
+
+Vertex travelPath (Map* m, path* p) {
+   int facing = SOUTH;
+   Point currentPoint;
+   currentPoint.x = -3;
+   currentPoint.y = 5;
+   int verticeType = getVertex(m, currentPoint);
+   assert (verticeType != -1);
+   int i = 0;
+   char direction = p[i];
+   while (i < strlen(p)) {
+      if (verticeType == SIDE_VERTICAL) {
+         if (direction == "L") {
+            currentPoint.x = currentPoint.x + (1 * facing);
+         } else if (direction == "R") {
+            currentPoint.x = currentPoint.x + (-1 * facing);
+         } else if (direction == "B") {
+            if (facing == SOUTH) {
+               currentPoint.y ++;
+            } else {
+               currentPoint.y --;
+            }
+            facing = swapFacing(facing);
+         }
+      } else if (verticeType == SIDE_FORWARDSLASH) {
+         if (direction == "L") {
+
+         } else if (direction == "R") {
+
+         } else if (direction == "B") {
+            if (facing == SOUTH) {
+               currentPoint.x ++;
+            } else {
+               currentPoint.x --;
+            }
+            facing = swapFacing(facing);
+         }
+      } else if (verticeType == SIDE_BACKSLASH) {
+         if (direction == "L") {
+
+         } else if (direction == "R") {
+
+         } else if (direction == "B") {
+
+         }
+      }
+      i++;
+   }
+   return p;
+}
+
+int swapFacing (int facing) {
+   if (facing == SOUTH) {
+      facing = NORTH;
+   } else {
+      facing = SOUTH;
+   }
+   return facing;
+}
+
+int getVertex(Map* m, Point p) {
+   int i = 0;
+   while (i < NUM_VERTICES) {
+      if (m->vertices[i].location.x == p.x && m->vertices[i].location.y = p.y)
+         return m->vertices[i].verticeType;
+      i++;
+   }
+   return -1
 }
 
 //"""@@@@ Functions which GET data about the game aka GETTERS @@@@"""
@@ -469,7 +618,7 @@ int getWhoseTurn (Game g) {
 //     the legal direction characters and of a legal length,
 //     and which does not leave the island into the sea at any stage.
 //   * that disciplines mentioned in any retraining actions are valid
-//     discipline numbers, and that the university has sufficient
+//     discipline numbers, and that the u has sufficient
 //     students of the correct type to perform the retraining
 //
 // eg when placing a campus consider such things as:
@@ -501,10 +650,10 @@ void makeAction (Game g, action a) {
    #define BUILD_GO8 2           #define OBTAIN_ARC 3
    #define START_SPINOFF 4       #define OBTAIN_PUBLICATION 5
    #define OBTAIN_IP_PATENT 6    #define RETRAIN_STUDENTS 7 */
-   """Make sure to update Game Data *AFTER* an action is *COMPLETED*\
-      perhaps make a function for updating.""";
-   """Update mostARCsPlayer""";
-   """Update mostPublicationsPlayer""";
+//   """Make sure to update Game Data *AFTER* an action is *COMPLETED*
+//      perhaps make a function for updating.""";
+//   """Update mostARCsPlayer""";
+//   """Update mostPublicationsPlayer""";
 
 }
 
@@ -512,21 +661,21 @@ void makeAction (Game g, action a) {
 // VACANT_VERTEX)
 int getCampus(Game g, path pathToVertex) {
 //MEDIUM
-   """Make this after pathing is done""";
+//   """Make this after pathing is done""";
    return 0;
 }
 
 // the contents of the given edge (ie ARC code or vacent ARC)
 int getARC(Game g, path pathToEdge) {
-   """Make this after pathing is done""";
+//   """Make this after pathing is done""";
    return 0;
 }
 
-int checkPath (Game g, path p) {
+/*int checkPath (Game g, path p) {
 
-}
+}*/
 
-// which university currently has the prestige award for the most ARCs?
+// which u currently has the prestige award for the most ARCs?
 // this is NO_ONE until the first arc is purchased after the game
 // has started.
 int getMostARCs (Game g) {
@@ -534,7 +683,7 @@ int getMostARCs (Game g) {
    //COMPLETED
 }
 
-// which university currently has the prestige award for the most pubs?
+// which u currently has the prestige award for the most pubs?
 // this is NO_ONE until the first publication is made.
 int getMostPublications (Game g) {
    return g->mostPublicationsPlayer;
@@ -543,35 +692,35 @@ int getMostPublications (Game g) {
 
 // return the number of ARC grants the specified player currently has
 int getARCs (Game g, int player) {
-   return g->universities[player].ownedArcCount;
+   return g->unis[player].ownedArcCount;
    //COMPLETED
 }
 
 // return the number of GO8 campuses the specified player currently has
 int getGO8s (Game g, int player) {
 //MEDIUM
-   """You will need to make another function that goes through the\
-   university's campuses and check to see if they are GO8 or normal""";
+//   """You will need to make another function that goes through the
+//   u's campuses and check to see if they are GO8 or normal""";
    return 0;
 }
 
 // return the number of normal Campuses the specified player currently has
 int getCampuses (Game g, int player) {
 //MEDIUM
-   """You will need to make another function that goes through the\
-   university's campuses and check to see if they are GO8 or normal""";
+//   """You will need to make another function that goes through the
+//   u's campuses and check to see if they are GO8 or normal""";
    return 0;
 }
 
 // return the number of IP Patents the specified player currently has
 int getIPs (Game g, int player) {
-   return g->universities[player].patentCount;
+   return g->unis[player].patentCount;
    //COMPLETED
 }
 
 // return the number of Publications the specified player currently has
 int getPublications (Game g, int player) {
-   return g->universities[player].publicationCount;
+   return g->unis[player].publicationCount;
    //COMPLETED
 }
 
@@ -593,17 +742,17 @@ int getKPIpoints (Game g, int player){
 int getStudents (Game g, int player, int discipline) {
    int students = 0;
    if (discipline == STUDENT_THD) {
-      students = g->universities[player].studentCount.thd;
+      students = g->unis[player].studentCount.thd;
    } else if (discipline == STUDENT_BPS) {
-      students = g->universities[player].studentCount.bps;
+      students = g->unis[player].studentCount.bps;
    } else if (discipline == STUDENT_BQN) {
-      students = g->universities[player].studentCount.bqn;
+      students = g->unis[player].studentCount.bqn;
    } else if (discipline == STUDENT_MJ) {
-      students = g->universities[player].studentCount.mj;
+      students = g->unis[player].studentCount.mj;
    } else if (discipline == STUDENT_MTV) {
-      students = g->universities[player].studentCount.mtv;
+      students = g->unis[player].studentCount.mtv;
    } else if (discipline == STUDENT_MMONEY) {
-      students = g->universities[player].studentCount.mmoney;
+      students = g->unis[player].studentCount.mmoney;
    }
    return students;
    //COMPLETED
@@ -616,11 +765,11 @@ int getStudents (Game g, int player, int discipline) {
 int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 //MEDIUM
    int rate = DEFAULT_EXCHANGE_RATE;
-   int totalcampuses = g->universities[player].ownedCampusCount;
+   int totalcampuses = g->unis[player].ownedCampusCount;
    int centre;
    int i = 0;
    while (i < totalcampuses) {
-      centre = g->universities[player].ownedCampuses[i].retrainingCentre;
+      centre = g->unis[player].ownedCampuses[i].retrainingCentre;
       if (disciplineFrom == centre) {
          rate = TRAINING_CENTRE_RATE;
       }
@@ -632,5 +781,27 @@ int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 
 // free all the memory malloced for the game
 void disposeGame (Game g) {
+   int regionNum = 0;
+   while (regionNum < NUM_REGIONS) {
+      (void) g->map.regions[regionNum];
+      regionNum++;
+   }
+   int edgeNum = 0;
+   while (edgeNum < NUM_EDGES) {
+      (void) g->map.edges[edgeNum];
+      edgeNum++;
+   }
+   int vertexNum = 0;
+   while (vertexNum < NUM_VERTICES) {
+      (void) g->map.vertices[vertexNum];
+      vertexNum++;
+   }
+
+   int uniID = 0;
+   while (uniID < NUM_UNIS) {
+      free(&g->unis[uniID].ownedCampuses);
+      free(&g->unis[uniID].ownedArcs);
+      uniID++;
+   }
    free (g);
 }

@@ -21,9 +21,12 @@ int main(int argc, char * argv[]){
    //Creates a new game, based on default map
    int discipline[] = DEFAULT_DISCIPLINES;
    int dice[] = DEFAULT_DICE;
+   printf ("Building Game!\n");
    Game g = newGame (discipline, dice);
+   printf ("Game built!\n");
    //Tests the game
    testInitialState(g);
+   throwDice(g, 7);
    //Tests each actiom to see if they are legal
    testLegalAction(g, UNI_A);
    testLegalAction(g, UNI_B);
@@ -76,7 +79,7 @@ void testInitialState(Game g){
          testStudentFrom ++;
          testStudentTo = STUDENT_BPS;
       }
-      
+
       assert(getKPIpoints(g,uni) == 20);
       assert(getARCs(g,uni) == 0);
       assert(getGO8s(g,uni) == 0);
@@ -92,9 +95,33 @@ void testInitialState(Game g){
       assert(getStudents(g,uni,STUDENT_MTV)==1);
       assert(getStudents(g,uni,STUDENT_MMONEY)==1);
 
-
       uni++;
    }
+   //Test isLegalAction at Terra Nullis
+   action passAction;
+   action CampusAction;
+   action GO8Action;
+   action ARCAction;
+   action spinoffAction;
+   action publicationAction;
+   action patentAction;
+   action retrainAction;
+   passAction.actionCode = PASS;
+   CampusAction.actionCode = BUILD_CAMPUS;
+   GO8Action.actionCode = BUILD_GO8;
+   ARCAction.actionCode = OBTAIN_ARC;
+   spinoffAction.actionCode = START_SPINOFF;
+   publicationAction.actionCode = OBTAIN_PUBLICATION;
+   patentAction.actionCode = OBTAIN_IP_PATENT;
+   retrainAction.actionCode = RETRAIN_STUDENTS;
+   assert(isLegalAction(g, passAction) == FALSE);
+   assert(isLegalAction(g, CampusAction) == FALSE);
+   assert (isLegalAction(g, GO8Action) == FALSE);
+   assert(isLegalAction(g, ARCAction) == FALSE);
+   assert(isLegalAction(g, spinoffAction) == FALSE);
+   assert(isLegalAction(g, publicationAction) == FALSE);
+   assert(isLegalAction(g, patentAction) == FALSE);
+   assert(isLegalAction(g, retrainAction) == FALSE);
    printf ("All initialState tests passed!\n");
 }
 
@@ -123,34 +150,34 @@ void testLegalAction(Game g, int player){
           getStudents(g, player, STUDENT_BQN) >= 1 &&
           getStudents(g, player, STUDENT_MJ) >= 1 &&
           getStudents(g, player, STUDENT_MTV) >= 1);
-   assert(isLegalAction(g, CampusAction) == FALSE &&
-          (getStudents(g, player, STUDENT_BPS) < 1) ||
+   assert((isLegalAction(g, CampusAction) == FALSE) &&
+          ((getStudents(g, player, STUDENT_BPS) < 1) ||
           (getStudents(g, player, STUDENT_BQN) < 1) ||
           (getStudents(g, player, STUDENT_MJ) < 1) ||
-          (getStudents(g, player, STUDENT_MTV) < 1));
+          (getStudents(g, player, STUDENT_MTV) < 1)));
 
    assert (isLegalAction(g, GO8Action) == TRUE &&
           getStudents(g, player, STUDENT_MJ) >= 2 &&
           getStudents(g, player, STUDENT_MMONEY) >= 3);
-   assert (isLegalAction(g, GO8Action) == FALSE &&
-          (getStudents(g, player, STUDENT_MJ) < 2) ||
-          (getStudents(g, player, STUDENT_MMONEY) < 3));
+   assert ((isLegalAction(g, GO8Action) == FALSE) &&
+          ((getStudents(g, player, STUDENT_MJ) < 2) ||
+          (getStudents(g, player, STUDENT_MMONEY) < 3)));
 
    assert(isLegalAction(g, ARCAction) == TRUE &&
           getStudents(g, player, STUDENT_BQN) >= 1 &&
           getStudents(g, player, STUDENT_BPS) >= 1);
-   assert(isLegalAction(g, ARCAction) == FALSE &&
-         (getStudents(g, player, STUDENT_BQN) < 1) ||
-         (getStudents(g, player, STUDENT_BPS) < 1));
+   assert((isLegalAction(g, ARCAction) == FALSE) &&
+         ((getStudents(g, player, STUDENT_BQN) < 1) ||
+         (getStudents(g, player, STUDENT_BPS) < 1)));
 
    assert(isLegalAction(g, spinoffAction) == TRUE &&
           getStudents(g, player, STUDENT_MJ) >= 1 &&
           getStudents(g, player, STUDENT_MTV) >= 1 &&
           getStudents(g, player, STUDENT_MMONEY) >= 1);
-   assert(isLegalAction(g, spinoffAction) == FALSE &&
-         (getStudents(g, player, STUDENT_MJ) < 1) ||
+   assert((isLegalAction(g, spinoffAction) == FALSE) &&
+         ((getStudents(g, player, STUDENT_MJ) < 1) ||
          (getStudents(g, player, STUDENT_MTV) < 1) ||
-         (getStudents(g, player, STUDENT_MMONEY) < 1));
+         (getStudents(g, player, STUDENT_MMONEY) < 1)));
 
    assert(isLegalAction(g, publicationAction) == FALSE);
    assert(isLegalAction(g, patentAction) == FALSE);
