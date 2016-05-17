@@ -651,38 +651,51 @@ int isLegalAction (Game g, action a) {
 // The function may assume that the action requested is legal.
 // START_SPINOFF is not a legal action here
 void makeAction (Game g, action a) {
-//MEDIUM-HARD
-//   """Make sure to update Game Data *AFTER* an action is *COMPLETED*
-//      perhaps make a function for updating.""";
-//   """Update mostARCsPlayer""";
-//   """Update mostPublicationsPlayer""";
-   if (a->actionCode == PASS){
-      //throwDice....
-   }else if (a->actionCode == BUILD_CAMPUS){
-      //define vertex
-      //vertex->location = a.destination
-      //if getWhoseTurn == UNI_A
-         //vertex->isOwned = CAMPUS_A etc..
-      //g->unis[player].ownedCampusCount++;
-      //g->unis[player].ownedCampuses append a.destination
-      //Increase KPICount for the uni (is this needed?)
+/*MEDIUM-HARD
+ *   """Make sure to update Game Data *AFTER* an action is *COMPLETED*
+ *      perhaps make a function for updating.""";
+ *   """Update mostARCsPlayer""";
+ *
+ *   TO DO:
+ *      OBTAIN_ARC
+*/
+
+   int currentPlayer = getWhoseTurn(g);
+   int uniID = currentPlayer -1;
+   if (a->actionCode == BUILD_CAMPUS){
+      int campusNumber = g->unis[uniID].ownedCampusCount;
+      Vertex v;
+      v.location = travelPath(g->map, a.destination);
+      v.isOwned = currentPlayer;
+      
+      g->unis[uniID].ownedCampuses[campusNumber] = v;
+      g->unis[uniID].ownedCampusCount++;
    }else if (a->actionCode == BUILD_GO8){
-      //same as above but with GO8 instead of CAMPUS
+      int i = 0;
+      int campusCount = g->unis[uniID].ownedCampusCount;
+      while (i < campusCount){
+         if ( g->unis[uniID].ownedCampuses[i].location == travelPath(g->map, a.destination) ){
+            g->unis[uniID].ownedCampuses[i].isOwned += UPGRADE;
+         }
+         i++;
+      }
    }else if (a->actionCode == OBTAIN_ARC){
       //EDGEs instead of VERTEXes
       //Also include mostARCsPlayer
-   }else if (a->actionCode == START_SPINOFF){
-      //According to Game.h, this is not a legal action?
    }else if (a->actionCode == OBTAIN_PUBLICATION){
-      //g->unis[player].publicationCount++;
-      //Include mostPublicationsPlayer
+      g->unis[uniID].publicationCount++;
+      int publications = getPublications(g, currentPlayer);
+      
+      if (publications > getPublications(g, getMostPublications(g));
+         g->mostPublications = publications;
+         g->mostPublicationsPlayer = currentPlayer;
    }else if (a->actionCode == OBTAIN_IP_PATENT){
-      //g->unis[player].patentCount++;
+      g->unis[uniID].patentCount++;
    }else if (a->actionCode == RETRAIN_STUDENTS){
-      //Using exchange rate exchange students
-      //depends on getWhoseTurn
+      int exchangeRate = getExchangeRate(g, currentPlayer, a.disciplineFrom, a.disciplineTo);
+      g->unis[uniID].studentCount[disciplineFrom] -= exchangeRate;
+      g->unis[uniID].studentCount[disciplineTo] += exchangeRate;
    }
-   //updateGame(Game g, action a); is this needed?
 }
 
 // return the contents of the given vertex (ie campus code or
