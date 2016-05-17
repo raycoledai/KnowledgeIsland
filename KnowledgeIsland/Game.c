@@ -5,8 +5,6 @@
 #include <string.h>
 #include "Game.h"
 
-//Jez is testing shit
-
 #define DEFAULT_DISCIPLINES {STUDENT_BQN, STUDENT_MMONEY, STUDENT_MJ, \
                 STUDENT_MMONEY, STUDENT_MJ, STUDENT_BPS, STUDENT_MTV, \
                 STUDENT_MTV, STUDENT_BPS,STUDENT_MTV, STUDENT_BQN, \
