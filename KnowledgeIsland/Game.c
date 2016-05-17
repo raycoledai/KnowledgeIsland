@@ -649,11 +649,16 @@ int isLegalAction (Game g, action a) {
 // The function may assume that the action requested is legal.
 // START_SPINOFF is not a legal action here
 void makeAction (Game g, action a) {
-//MEDIUM-HARD
-//   """Make sure to update Game Data *AFTER* an action is *COMPLETED*
-//      perhaps make a function for updating.""";
-//   """Update mostARCsPlayer""";
-//   """Update mostPublicationsPlayer""";
+/*MEDIUM-HARD
+ *   """Make sure to update Game Data *AFTER* an action is *COMPLETED*
+ *      perhaps make a function for updating.""";
+ *   """Update mostARCsPlayer""";
+ *
+ *   TO DO:
+ *      OBTAIN_ARC
+ *      RETRAIN_STUDENTS
+*/
+
    int currentPlayer = getWhoseTurn(g);
    int uniID = currentPlayer -1;
    if (a->actionCode == BUILD_CAMPUS){
