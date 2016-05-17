@@ -62,6 +62,9 @@
 #define SOUTH 1 define
 #define NORTH -1
 
+//Conversion
+#define UPGRADE 3
+
 typedef struct _Point {
    //a point struct that can store (x,y) co-ordinates
    int x;
