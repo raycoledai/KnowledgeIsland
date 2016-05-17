@@ -656,7 +656,6 @@ void makeAction (Game g, action a) {
  *
  *   TO DO:
  *      OBTAIN_ARC
- *      RETRAIN_STUDENTS
 */
 
    int currentPlayer = getWhoseTurn(g);
@@ -691,8 +690,9 @@ void makeAction (Game g, action a) {
    }else if (a->actionCode == OBTAIN_IP_PATENT){
       g->unis[uniID].patentCount++;
    }else if (a->actionCode == RETRAIN_STUDENTS){
-      //Using exchange rate exchange students
-      //depends on getWhoseTurn
+      int exchangeRate = getExchangeRate(g, currentPlayer, a.disciplineFrom, a.disciplineTo);
+      g->unis[uniID].studentCount[disciplineFrom] -= exchangeRate;
+      g->unis[uniID].studentCount[disciplineTo] += exchangeRate;
    }
 }
 
