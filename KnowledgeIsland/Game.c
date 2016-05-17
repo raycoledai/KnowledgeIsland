@@ -22,6 +22,7 @@
 #define VERTICES_PER_REGION 6
 #define MAX_OWNED_CAMPUSES 27
 #define MAX_OWNED_ARCS 72
+#define TYPES_OF_STUDENTS 6
 
 //KPI Point System
 #define KPI_PER_ARC 2
@@ -91,21 +92,12 @@ typedef struct _Vertex {
 typedef struct _Map {
    Region regions[NUM_REGIONS]; //an array of Regions, NUM_REGIONS long
    Edge edges[NUM_EDGES]; //an array of Edges, NUM_EDGES long
-   Vertex vertices[NUM_VERTICES]; //an array of Vertices, NUM_VERTICES long
+   Vertex vertices[NUM_VERTICES]; // an array of Vertices, NUM_VERTICES long
 } Map;
-
-typedef struct _StudentCount {
-   int thd;
-   int bps;
-   int bqn;
-   int mj;
-   int mtv;
-   int mmoney;
-} StudentCount;
 
 typedef struct _university {
    int playerId;
-   StudentCount studentCount; //The number of students they have per degree
+   int studentCount[TYPES_OF_STUDENTS]; //The number of students they have per degree
    int publicationCount;
    int patentCount;
    int ownedCampusCount;
@@ -408,12 +400,12 @@ void initUniversity(uni* u, int player) {
    //Initialise the unis
    u->playerId = player; //uniID, which is 1,2 or 3
    //Give the unis their starting students
-   u->studentCount.thd = START_NUM_THD;
-   u->studentCount.bps = START_NUM_BPS;
-   u->studentCount.bqn = START_NUM_BQN;
-   u->studentCount.mj = START_NUM_MJ;
-   u->studentCount.mtv = START_NUM_MTV;
-   u->studentCount.mmoney = START_NUM_MMONEY;
+   u->studentCount[STUDENT_THD] = START_NUM_THD;
+   u->studentCount[STUDENT_BPS] = START_NUM_BPS;
+   u->studentCount[STUDENT_BQN] = START_NUM_BQN;
+   u->studentCount[STUDENT_MJ] = START_NUM_MJ;
+   u->studentCount[STUDENT_MTV] = START_NUM_MTV;
+   u->studentCount[STUDENT_MMONEY] = START_NUM_MMONEY;
    u->publicationCount = START_NUM_PUBLICATIONS;
    u->patentCount = START_NUM_PATENTS;
    u->ownedCampusCount = 2;
@@ -438,10 +430,12 @@ void throwDice (Game g, int diceScore) {
    g->currentTurn++; //Increases current turn by 1 FIRST
    //int regionNum = 0;
    int uniID;
-   /*while (regionNum < NUM_REGIONS) {
+   while (regionNum < NUM_REGIONS) {
       if (g->map.regions[regionNum].diceValue == diceScore) {
          int discipline = g->map.regions[regionNum].disciplineValue;
          int vertexNum = 0;
+         int uniID;
+         int increaseAmount;
          Point regionLocation = g->map.regions[regionNum].location;
          Point location;
          while (vertexNum < VERTICES_PER_REGION) {
@@ -449,37 +443,37 @@ void throwDice (Game g, int diceScore) {
             int vOwned = getCampus(&g, getPath(&g->map, location));
             if (vOwned) {
                uniID = (vOwned -1) %3;
-               int increaseAmount = 1;
+               increaseAmount = 1;
                if (vOwned > 3) {
                   increaseAmount = 2;
                }
                if (discipline == STUDENT_THD) {
-                  g->unis[uniID].studentCount.thd += increaseAmount;
+                  g->unis[uniID].studentCount[STUDENT_THD] += increaseAmount;
                } else if (discipline == STUDENT_BPS) {
-                  g->unis[uniID].studentCount.bps += increaseAmount;
+                  g->unis[uniID].studentCount[STUDENT_BPS] += increaseAmount;
                } else if (discipline == STUDENT_BQN) {
-                  g->unis[uniID].studentCount.bqn += increaseAmount;
+                  g->unis[uniID].studentCount[STUDENT_BQN] += increaseAmount;
                } else if (discipline == STUDENT_MJ) {
-                  g->unis[uniID].studentCount.mj += increaseAmount;
+                  g->unis[uniID].studentCount[STUDENT_MJ] += increaseAmount;
                } else if (discipline == STUDENT_MTV) {
-                  g->unis[uniID].studentCount.mtv += increaseAmount;
+                  g->unis[uniID].studentCount[STUDENT_MTV] += increaseAmount;
                } else if (discipline == STUDENT_MMONEY) {
-                  g->unis[uniID].studentCount.mmoney += increaseAmount;
+                  g->unis[uniID].studentCount[STUDENT_MMONEY] += increaseAmount;
                }
             }
             vertexNum++;
          }
       }
       regionNum++;
-   }*/
+   }
    if (diceScore == 7) {
       uniID = 0;
       while (uniID < NUM_UNIS) {
          uni* u = &g->unis[uniID];
-         u->studentCount.thd += u->studentCount.mmoney;
-         u->studentCount.thd += u->studentCount.mtv;
-         u->studentCount.mmoney = 0;
-         u->studentCount.mtv = 0;
+         u->studentCount[STUDENT_THD] += u->studentCount[STUDENT_MMONEY];
+         u->studentCount[STUDENT_THD] += u->studentCount[STUDENT_MTV];
+         u->studentCount[STUDENT_MMONEY] = 0;
+         u->studentCount[STUDENT_MTV] = 0;
          uniID++;
       }
    }
@@ -509,14 +503,19 @@ Point getVertexLocation(Point location, int vertexNum) {
 Vertex travelPath (Map* m, path* p) {
    int facing = SOUTH;
    Point currentPoint;
+   Point previousPoint;
+   previousPoint.x = -4;
+   previousPoint.y = 5;
    currentPoint.x = -3;
    currentPoint.y = 5;
-   int verticeType = getVertex(m, currentPoint);
-   assert (verticeType != -1);
-   int i = 0;
-   char direction = p[i];
+   int edgeType = SIDE_BACKSLASH;
+   assert (edgeType != -1);
+   int i = 1;
+   char direction;
    while (i < strlen(p)) {
-      if (verticeType == SIDE_VERTICAL) {
+      previousPoint = currentPoint;
+      direction = p[i];
+      if (edgeType == SIDE_VERTICAL) {
          if (direction == "L") {
             currentPoint.x = currentPoint.x + (1 * facing);
          } else if (direction == "R") {
@@ -529,7 +528,7 @@ Vertex travelPath (Map* m, path* p) {
             }
             facing = swapFacing(facing);
          }
-      } else if (verticeType == SIDE_FORWARDSLASH) {
+      } else if (edgeType == SIDE_FORWARDSLASH) {
          if (direction == "L") {
 
          } else if (direction == "R") {
@@ -542,15 +541,17 @@ Vertex travelPath (Map* m, path* p) {
             }
             facing = swapFacing(facing);
          }
-      } else if (verticeType == SIDE_BACKSLASH) {
+      } else if (edgeType == SIDE_BACKSLASH) {
          if (direction == "L") {
-
+            currentPoint.y ++;
          } else if (direction == "R") {
-
+            currentPoint.x + (-1*facing);
          } else if (direction == "B") {
-
+            currentPoint.x = currentPoint.x + (-1 * facing);
+            facing = swapFacing(facing);
          }
       }
+      getEdgeType(m, currentPoint, previousPoint)
       i++;
    }
    return p;
@@ -565,11 +566,11 @@ int swapFacing (int facing) {
    return facing;
 }
 
-int getVertex(Map* m, Point p) {
+int getEdgeType(Map* m, Point p) {
    int i = 0;
    while (i < NUM_VERTICES) {
-      if (m->vertices[i].location.x == p.x && m->vertices[i].location.y = p.y)
-         return m->vertices[i].verticeType;
+      if ((m->edges[i].point0 == p) )
+         return m->edges[i].edgeType;
       i++;
    }
    return -1
@@ -764,17 +765,17 @@ int getKPIpoints (Game g, int player){
 int getStudents (Game g, int player, int discipline) {
    int students = 0;
    if (discipline == STUDENT_THD) {
-      students = g->unis[player].studentCount.thd;
+      students = g->unis[player].studentCount[STUDENT_THD];
    } else if (discipline == STUDENT_BPS) {
-      students = g->unis[player].studentCount.bps;
+      students = g->unis[player].studentCount[STUDENT_BPS];
    } else if (discipline == STUDENT_BQN) {
-      students = g->unis[player].studentCount.bqn;
+      students = g->unis[player].studentCount[STUDENT_BQN];
    } else if (discipline == STUDENT_MJ) {
-      students = g->unis[player].studentCount.mj;
+      students = g->unis[player].studentCount[STUDENT_MJ];
    } else if (discipline == STUDENT_MTV) {
-      students = g->unis[player].studentCount.mtv;
+      students = g->unis[player].studentCount[STUDENT_MTV];
    } else if (discipline == STUDENT_MMONEY) {
-      students = g->unis[player].studentCount.mmoney;
+      students = g->unis[player].studentCount[STUDENT_MMONEY];
    }
    return students;
    //COMPLETED
