@@ -657,21 +657,26 @@ void makeAction (Game g, action a) {
       //vertex->location = a.destination
       //if getWhoseTurn == UNI_A
          //vertex->isOwned = CAMPUS_A etc..
+      //g->unis[player].ownedCampusCount++;
+      //g->unis[player].ownedCampuses append a.destination
+      //Increase KPICount for the uni (is this needed?)
    }else if (a->actionCode == BUILD_GO8){
       //same as above but with GO8 instead of CAMPUS
    }else if (a->actionCode == OBTAIN_ARC){
       //EDGEs instead of VERTEXes
+      //Also include mostARCsPlayer
    }else if (a->actionCode == START_SPINOFF){
       //According to Game.h, this is not a legal action?
    }else if (a->actionCode == OBTAIN_PUBLICATION){
-      
+      //g->unis[player].publicationCount++;
+      //Include mostPublicationsPlayer
    }else if (a->actionCode == OBTAIN_IP_PATENT){
-      
+      //g->unis[player].patentCount++;
    }else if (a->actionCode == RETRAIN_STUDENTS){
       //Using exchange rate exchange students
       //depends on getWhoseTurn
    }
-   updateGame(Game g, action a);//?
+   //updateGame(Game g, action a); is this needed?
 }
 
 // return the contents of the given vertex (ie campus code or
