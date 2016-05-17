@@ -26,7 +26,7 @@ char findGO8Path (Game g);
 
 action decideAction (Game g) {
    action nextAction;
-   int uniID = getWhoseTurn (Game g);
+   int uniID = getWhoseTurn (g);
    StudentCount myStudents;
    getAllStudents(myStudents);
    if (getARCs(g, uniID) >= 2) {
