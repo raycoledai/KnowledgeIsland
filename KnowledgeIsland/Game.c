@@ -15,6 +15,7 @@
                 {-4,3,CENTRE_MTV}, {-3,3,CENTRE_MTV}, {4,3,CENTRE_BQN},\
                 {4,1,CENTRE_BQN}, {4,-1,CENTRE_MJ}, {4,-3,CENTRE_MJ},\
                 {-1,-5,CENTRE_BPS}, {0,-5,CENTRE_BPS}}
+
 //Boundaries
 #define NUM_VERTICES 54
 #define NUM_EDGES 72
@@ -57,7 +58,7 @@
 #define SIDE_BACKSLASH 2    //"\"
 
 //Path direction
-#define SOUTH 1
+#define SOUTH 1 define
 #define NORTH -1
 
 typedef struct _Point {
@@ -645,15 +646,27 @@ int isLegalAction (Game g, action a) {
 // START_SPINOFF is not a legal action here
 void makeAction (Game g, action a) {
 //MEDIUM-HARD
-/* For easy reference #defined action codes:
-   #define PASS 0                #define BUILD_CAMPUS 1
-   #define BUILD_GO8 2           #define OBTAIN_ARC 3
-   #define START_SPINOFF 4       #define OBTAIN_PUBLICATION 5
-   #define OBTAIN_IP_PATENT 6    #define RETRAIN_STUDENTS 7 */
 //   """Make sure to update Game Data *AFTER* an action is *COMPLETED*
 //      perhaps make a function for updating.""";
 //   """Update mostARCsPlayer""";
 //   """Update mostPublicationsPlayer""";
+   if (a->actionCode == PASS){
+      
+   }else if (a->actionCode == BUILD_CAMPUS){
+      
+   }else if (a->actionCode == BUILD_GO8){
+      
+   }else if (a->actionCode == OBTAIN_ARC){
+      
+   }else if (a->actionCode == START_SPINOFF){
+      
+   }else if (a->actionCode == OBTAIN_PUBLICATION){
+      
+   }else if (a->actionCode == OBTAIN_IP_PATENT){
+      
+   }else if (a->actionCode == RETRAIN_STUDENTS){
+      
+   }
 
 }
 
