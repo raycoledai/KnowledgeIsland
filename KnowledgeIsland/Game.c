@@ -654,29 +654,37 @@ void makeAction (Game g, action a) {
 //      perhaps make a function for updating.""";
 //   """Update mostARCsPlayer""";
 //   """Update mostPublicationsPlayer""";
-   currentPlayer = getWhoseTurn(g);
+   int currentPlayer = getWhoseTurn(g);
+   int uniID = currentPlayer -1;
    if (a->actionCode == BUILD_CAMPUS){
-      int campusNumber = g->unis[currentPlayer].ownedCampusCount;
+      int campusNumber = g->unis[uniID].ownedCampusCount;
       Vertex v;
       v.location = travelPath(g->map, a.destination);
       v.isOwned = currentPlayer;
       
-      g->unis[currentPlayer].ownedCampuses[campusNumber] = v;
-      g->unis[currentPlayer].ownedCampusCount++;
+      g->unis[uniID].ownedCampuses[campusNumber] = v;
+      g->unis[uniID].ownedCampusCount++;
    }else if (a->actionCode == BUILD_GO8){
-      //same as above but with GO8 instead of CAMPUS
+      int i = 0;
+      int campusCount = g->unis[uniID].ownedCampusCount;
+      while (i < campusCount){
+         if ( g->unis[uniID].ownedCampuses[i].location == travelPath(g->map, a.destination) ){
+            g->unis[uniID].ownedCampuses[i].isOwned += UPGRADE;
+         }
+         i++;
+      }
    }else if (a->actionCode == OBTAIN_ARC){
       //EDGEs instead of VERTEXes
       //Also include mostARCsPlayer
    }else if (a->actionCode == OBTAIN_PUBLICATION){
-      g->unis[currentPlayer].publicationCount++;
+      g->unis[uniID].publicationCount++;
       int publications = getPublications(g, currentPlayer);
       
       if (publications > getPublications(g, getMostPublications(g));
          g->mostPublications = publications;
          g->mostPublicationsPlayer = currentPlayer;
    }else if (a->actionCode == OBTAIN_IP_PATENT){
-      g->unis[currentPlayer].patentCount++;
+      g->unis[uniID].patentCount++;
    }else if (a->actionCode == RETRAIN_STUDENTS){
       //Using exchange rate exchange students
       //depends on getWhoseTurn
