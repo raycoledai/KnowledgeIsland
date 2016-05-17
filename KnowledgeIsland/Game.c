@@ -770,7 +770,7 @@ int getPublications (Game g, int player) {
 int getKPIpoints (Game g, int player){
 //EASY-MEDIUM
    int KPICount = 0;
-   KPICount += KPI_PER_ARC * getARC (g, player);
+   KPICount += KPI_PER_ARC * getARCs (g, player);
    KPICount += KPI_PER_CAMPUS * getCampuses (g, player);
    KPICount += KPI_PER_GO8 * getGO8s (g, player);
    KPICount += KPI_PER_PATENT * getIPs (g, player);
