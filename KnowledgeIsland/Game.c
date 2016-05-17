@@ -656,17 +656,13 @@ void makeAction (Game g, action a) {
 //   """Update mostPublicationsPlayer""";
    currentPlayer = getWhoseTurn(g);
    if (a->actionCode == BUILD_CAMPUS){
-      //define vertex
-      //vertex->location = a.destination
-      if (getWhoseTurn(g) == UNI_A){
-         //vertex->isOwned = CAMPUS_A etc..
-      }else if (getWhoseTurn(g) == UNI_B){
-         
-      }else if (getWhoseTurn(g) == UNI_C){
-         
-      }
+      int campusNumber = g->unis[currentPlayer].ownedCampusCount;
+      Vertex v;
+      v.location = travelPath(g->map, a.destination);
+      v.isOwned = currentPlayer;
+      
+      g->unis[currentPlayer].ownedCampuses[campusNumber] = v;
       g->unis[currentPlayer].ownedCampusCount++;
-      g->unis[currentPlayer].ownedCampuses.
    }else if (a->actionCode == BUILD_GO8){
       //same as above but with GO8 instead of CAMPUS
    }else if (a->actionCode == OBTAIN_ARC){
