@@ -61,6 +61,9 @@
 #define SOUTH 1
 #define NORTH -1
 
+#define UPGRADE 3
+
+
 typedef struct _Point {
    //a point struct that can store (x,y) co-ordinates
    int x;
@@ -126,8 +129,8 @@ void addRegions(Point* regions, int x, int y);
 int isRegion (int x, int y);
 int checkPoint (int x, int y);
 Point getVertexLocation(Point location, int vertexNum);
-Vertex travelPath(Map* m, path* p);
-int swapFacing (int facing)
+Point travelPath(Map* m, path* p);
+int swapFacing (int facing);
 //int checkPath (Game g, path p);
 void initGame(Game game, int discipline[], int dice[]);
 
@@ -429,12 +432,14 @@ void throwDice (Game g, int diceScore) {
    g->currentTurn++; //Increases current turn by 1 FIRST
    //int regionNum = 0;
    int uniID;
+   int regionNum = 0;
+   int discipline = g->map.regions[regionNum].disciplineValue;
+   int vertexNum;
+   int increaseAmount;
    while (regionNum < NUM_REGIONS) {
       if (g->map.regions[regionNum].diceValue == diceScore) {
-         int discipline = g->map.regions[regionNum].disciplineValue;
-         int vertexNum = 0;
-         int uniID;
-         int increaseAmount;
+         discipline = g->map.regions[regionNum].disciplineValue;
+         vertexNum = 0;
          Point regionLocation = g->map.regions[regionNum].location;
          Point location;
          while (vertexNum < VERTICES_PER_REGION) {
@@ -499,7 +504,7 @@ Point getVertexLocation(Point location, int vertexNum) {
    return location;
 }
 
-Vertex travelPath (Map* m, path* p) {
+Point travelPath (Map* m, path* p) {
    int facing = SOUTH;
    Point currentPoint;
    Point previousPoint;
@@ -515,11 +520,11 @@ Vertex travelPath (Map* m, path* p) {
       previousPoint = currentPoint;
       direction = p[i];
       if (edgeType == SIDE_VERTICAL) {
-         if (direction == "L") {
+         if (direction == 'L') {
             currentPoint.x = currentPoint.x + (1 * facing);
-         } else if (direction == "R") {
+         } else if (direction == 'R') {
             currentPoint.x = currentPoint.x + (-1 * facing);
-         } else if (direction == "B") {
+         } else if (direction == 'B') {
             if (facing == SOUTH) {
                currentPoint.y ++;
             } else {
@@ -528,11 +533,11 @@ Vertex travelPath (Map* m, path* p) {
             facing = swapFacing(facing);
          }
       } else if (edgeType == SIDE_FORWARDSLASH) {
-         if (direction == "L") {
+         if (direction == 'L') {
 
-         } else if (direction == "R") {
+         } else if (direction == 'R') {
 
-         } else if (direction == "B") {
+         } else if (direction == 'B') {
             if (facing == SOUTH) {
                currentPoint.x ++;
             } else {
@@ -541,16 +546,16 @@ Vertex travelPath (Map* m, path* p) {
             facing = swapFacing(facing);
          }
       } else if (edgeType == SIDE_BACKSLASH) {
-         if (direction == "L") {
+         if (direction == 'L') {
             currentPoint.y ++;
-         } else if (direction == "R") {
+         } else if (direction == 'R') {
             currentPoint.x + (-1*facing);
-         } else if (direction == "B") {
+         } else if (direction == 'B') {
             currentPoint.x = currentPoint.x + (-1 * facing);
             facing = swapFacing(facing);
          }
       }
-      getEdgeType(m, currentPoint, previousPoint)
+      getEdgeType(m, currentPoint, previousPoint);
       i++;
    }
    return p;
@@ -568,11 +573,11 @@ int swapFacing (int facing) {
 int getEdgeType(Map* m, Point p) {
    int i = 0;
    while (i < NUM_VERTICES) {
-      if ((m->edges[i].point0 == p) )
+      if (m->edges[i].point0 == p )
          return m->edges[i].edgeType;
       i++;
    }
-   return -1
+   return -1;
 }
 
 //"""@@@@ Functions which GET data about the game aka GETTERS @@@@"""
@@ -604,7 +609,7 @@ int getWhoseTurn (Game g) {
    if (g->currentTurn == -1) {
       return NO_ONE;
    } else {
-      return (g->currentTurn + 3) % 3;
+      return ((g->currentTurn + 3) % 3)+1;
    }
    //COMPLETED
 }
@@ -700,17 +705,31 @@ int getARCs (Game g, int player) {
 // return the number of GO8 campuses the specified player currently has
 int getGO8s (Game g, int player) {
 //MEDIUM
-//   """You will need to make another function that goes through the
-//   u's campuses and check to see if they are GO8 or normal""";
-   return 0;
+   int i = 0;
+   int GO8CampusCount = 0;
+   int playerCampusCount = g->unis[player].ownedCampusCount;
+   while(i < playerCampusCount) {
+      if (player == g->unis[player].ownedCampuses[i].isOwned - UPGRADE) {
+         GO8CampusCount++;
+      }
+      i++;
+   }
+   return GO8CampusCount;
 }
 
 // return the number of normal Campuses the specified player currently has
 int getCampuses (Game g, int player) {
 //MEDIUM
-//   """You will need to make another function that goes through the
-//   u's campuses and check to see if they are GO8 or normal""";
-   return 0;
+   int i = 0;
+   int normalCampusCount = 0;
+   int playerCampusCount = g->unis[player].ownedCampusCount;
+   while(i < playerCampusCount) {
+      if (player == g->unis[player].ownedCampuses[i].isOwned) {
+         normalCampusCount++;
+      }
+      i++;
+   }
+   return normalCampusCount;
 }
 
 // return the number of IP Patents the specified player currently has
