@@ -651,23 +651,27 @@ void makeAction (Game g, action a) {
 //   """Update mostARCsPlayer""";
 //   """Update mostPublicationsPlayer""";
    if (a->actionCode == PASS){
-      
+      //throwDice....
    }else if (a->actionCode == BUILD_CAMPUS){
-      
+      //define vertex
+      //vertex->location = a.destination
+      //if getWhoseTurn == UNI_A
+         //vertex->isOwned = CAMPUS_A etc..
    }else if (a->actionCode == BUILD_GO8){
-      
+      //same as above but with GO8 instead of CAMPUS
    }else if (a->actionCode == OBTAIN_ARC){
-      
+      //EDGEs instead of VERTEXes
    }else if (a->actionCode == START_SPINOFF){
-      
+      //According to Game.h, this is not a legal action?
    }else if (a->actionCode == OBTAIN_PUBLICATION){
       
    }else if (a->actionCode == OBTAIN_IP_PATENT){
       
    }else if (a->actionCode == RETRAIN_STUDENTS){
-      
+      //Using exchange rate exchange students
+      //depends on getWhoseTurn
    }
-
+   updateGame(Game g, action a);//?
 }
 
 // return the contents of the given vertex (ie campus code or
