@@ -728,14 +728,19 @@ int getPublications (Game g, int player) {
 // return the number of KPI points the specified player currently has
 int getKPIpoints (Game g, int player){
 //EASY-MEDIUM
-/* For easy reference: #defines used for scoring:
-   #define KPI_PER_ARC 2         #define KPI_PER_PATENT 10
-   #define KPI_PER_CAMPUS 10     #define KPI_PER_GO8 20
-   #define KPI_FOR_MOST_PUBS 10  #define KPI_FOR_MOST_ARCS 10 */
    int KPICount = 0;
-   KPICount = KPICount + 2 * getARCs(g, player);
-
-   return 0;
+   KPICount += KPI_PER_ARC * getARC (g, player);
+   KPICount += KPI_PER_CAMPUS * getCampuses (g, player);
+   KPICount += KPI_PER_GO8 * getGO8s (g, player);
+   KPICount += KPI_PER_PATENT * getIPs (g, player);
+   if (player == g-> mostPublicationsPlayer) {
+      KPICount += KPI_FOR_MOST_PUBS;
+   }
+   if (player == g->mostArcsPlayer) {
+      KPICount += KPI_FOR_MOST_ARCS;
+   }
+   return KPICount;
+//COMPLETED
 }
 
 // return the number of students of the specified discipline type
