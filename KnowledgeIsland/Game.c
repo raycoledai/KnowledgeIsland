@@ -641,7 +641,40 @@ int getWhoseTurn (Game g) {
 int isLegalAction (Game g, action a) {
 //HARD
 // --- get data about a specified player ---
-   return 0;
+   int result;
+   
+   if (g->currentTurn = -1 /*|| not the persons turn*/){
+      result = FALSE;
+   }else {//If it is the persons turn
+      if (a->actionCode == PASS){
+         //Should always be legal as its the persons turn
+      }else if (a->actionCode == BUILD_CAMPUS){
+         //Required resources
+         
+      }else if (a->actionCode == BUILD_GO8){
+         //Required resources
+         
+      }else if (a->actionCode == OBTAIN_ARC){
+         
+      }else if (a->actionCode == START_SPINOFF){
+         //Required resources
+         
+      }else if (a->actionCode == OBTAIN_PUBLICATION){
+         //illegal to make this move
+         //can only make START_SPINOFF
+         //make action handles this
+      }else if (a->actionCode == OBTAIN_IP_PATENT){
+         //illegal to make this move
+         //can only make START_SPINOFF
+         //make action handles this
+      }else if (a->actionCode == RETRAIN_STUDENTS){
+         //Required resources
+         
+      }else {//ILLEGAL ACTION CODE ACCESSED
+         result = FALSE;
+      }
+   }
+   return result;
 }
 
 // make the specified action for the current player and update the
