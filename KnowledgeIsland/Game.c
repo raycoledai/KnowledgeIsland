@@ -643,22 +643,43 @@ int getWhoseTurn (Game g) {
 int isLegalAction (Game g, action a) {
 //HARD
 // --- get data about a specified player ---
-   return 0;
+   int result;
+   
+   if (g->currentTurn = -1 /*|| not the persons turn*/){
+      result = FALSE;
+   }else {//If it is the persons turn
+      if (a->actionCode == PASS){
+         //Should always be legal as its the persons turn
+      }else if (a->actionCode == BUILD_CAMPUS){
+         //Required resources
+         
+      }else if (a->actionCode == BUILD_GO8){
+         //Required resources
+         
+      }else if (a->actionCode == OBTAIN_ARC){
+         
+      }else if (a->actionCode == START_SPINOFF){
+         //Required resources
+         
+      }else if (a->actionCode == OBTAIN_PUBLICATION){
+         //illegal to make this move
+         //can only make START_SPINOFF
+         //make action handles this
+      }else if (a->actionCode == OBTAIN_IP_PATENT){
+         //illegal to make this move
+         //can only make START_SPINOFF
+         //make action handles this
+      }else if (a->actionCode == RETRAIN_STUDENTS){
+         //Required resources
+         
+      }else {//ILLEGAL ACTION CODE ACCESSED
+         result = FALSE;
+      }
+   }
+   return result;
 }
 
-// make the specified action for the current player and update the
-// game state accordingly.
-// The function may assume that the action requested is legal.
-// START_SPINOFF is not a legal action here
 void makeAction (Game g, action a) {
-/*MEDIUM-HARD
- *   """Make sure to update Game Data *AFTER* an action is *COMPLETED*
- *      perhaps make a function for updating.""";
- *   """Update mostARCsPlayer""";
- *
- *   TO DO:
- *      OBTAIN_ARC
-*/
 
    int currentPlayer = getWhoseTurn(g);
    int uniID = currentPlayer -1;
@@ -680,15 +701,27 @@ void makeAction (Game g, action a) {
          i++;
       }
    }else if (a->actionCode == OBTAIN_ARC){
-      //EDGEs instead of VERTEXes
-      //Also include mostARCsPlayer
+      int arcNumber = g->unis[uniID].ownedArcCount;
+      Edge e;
+      e.point0 = travelPath();
+      e.point1 = travelPath();
+      e.isOwned = currentPlayer;
+      
+      g->unis[uniID].ownedArcs[arcNumber] = e;
+      g->unis[uniID].ownedArcCount++;
+      
+      if (arcNumber > getMostARCs(g)){
+         g->mostArcs = arcNumber;
+         g->mostArcsPlayer = currentPlayer;
+      }
    }else if (a->actionCode == OBTAIN_PUBLICATION){
       g->unis[uniID].publicationCount++;
       int publications = getPublications(g, currentPlayer);
       
-      if (publications > getPublications(g, getMostPublications(g));
+      if (publications > getPublications(g, getMostPublications(g)){
          g->mostPublications = publications;
          g->mostPublicationsPlayer = currentPlayer;
+      }
    }else if (a->actionCode == OBTAIN_IP_PATENT){
       g->unis[uniID].patentCount++;
    }else if (a->actionCode == RETRAIN_STUDENTS){
@@ -696,6 +729,7 @@ void makeAction (Game g, action a) {
       g->unis[uniID].studentCount[disciplineFrom] -= exchangeRate;
       g->unis[uniID].studentCount[disciplineTo] += exchangeRate;
    }
+   //COMPLETED
 }
 
 // return the contents of the given vertex (ie campus code or
